@@ -18,3 +18,5 @@ serde_json = "1.0.81"
 thiserror = "1.0.30"
 
 ethereum_consensus = { git = "https://github.com/ralexstokes/ethereum_consensus" }
+axum = "0.5.4"
+mime = "0.3.16"
