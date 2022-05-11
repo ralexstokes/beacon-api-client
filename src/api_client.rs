@@ -1,39 +1,102 @@
+use crate::error::ApiError;
+use crate::types::{
+    ApiResult, AttestationDuty, BalanceSummary, BeaconHeaderSummary, BeaconProposerRegistration,
+    BlockId, CommitteeDescriptor, CommitteeFilter, CommitteeSummary, EventTopic,
+    FinalityCheckpoints, GenesisDetails, HealthStatus, NetworkIdentity, PeerDescription,
+    PeerDescriptor, PeerSummary, ProposerDuty, PubkeyOrIndex, StateId, SyncCommitteeDescriptor,
+    SyncCommitteeDuty, SyncCommitteeSummary, SyncStatus, ValidatorDescriptor, ValidatorSummary,
+};
 use ethereum_consensus::altair::mainnet::{
     SignedContributionAndProof, SyncCommitteeContribution, SyncCommitteeMessage,
 };
 use ethereum_consensus::bellatrix::mainnet::{BlindedBeaconBlock, SignedBlindedBeaconBlock};
-use ethereum_consensus::networking::{Enr, MetaData, Multiaddr, PeerId};
+use ethereum_consensus::builder::SignedValidatorRegistration;
+use ethereum_consensus::networking::Multiaddr;
 use ethereum_consensus::phase0::mainnet::{
-    Attestation, AttestationData, AttesterSlashing, BeaconBlock, BeaconState, Checkpoint, Fork,
-    ProposerSlashing, SignedAggregateAndProof, SignedBeaconBlock, SignedBeaconBlockHeader,
-    SignedVoluntaryExit, Validator,
+    Attestation, AttestationData, AttesterSlashing, BeaconBlock, BeaconState, Fork,
+    ProposerSlashing, SignedAggregateAndProof, SignedBeaconBlock, SignedVoluntaryExit,
 };
 use ethereum_consensus::primitives::{
-    BlsPublicKey, Bytes32, ChainId, CommitteeIndex, Coordinate, Epoch, ExecutionAddress, Gwei,
-    RandaoReveal, Root, Slot, ValidatorIndex, Version,
+    Bytes32, ChainId, CommitteeIndex, Coordinate, Epoch, ExecutionAddress, RandaoReveal, Root,
+    Slot, ValidatorIndex,
 };
-use serde::{Deserialize, Serialize};
+use reqwest;
 use std::collections::HashMap;
 use thiserror::Error;
-use reqwest::{Client, Error};
+use url::{ParseError, Url};
 
-pub enum APIError {}
-
-#[derive(Clone, Debug)]
-pub struct BeaconClient {
-    http: Client
+#[derive(Debug, Error)]
+pub enum Error {
+    #[error("could not parse URL: {0}")]
+    Url(#[from] ParseError),
+    #[error("could not send request: {0}")]
+    Http(#[from] reqwest::Error),
+    #[error("error from API: {0}")]
+    Api(#[from] ApiError),
 }
 
-impl BeaconClient {
+pub struct Client {
+    http: reqwest::Client,
+    endpoint: Url,
+}
 
-    pub fn new(client: Client)->Self{
-        Self{
-            http: client,
+impl Client {
+
+    pub fn new_with_client<U: Into<Url>>(client: reqwest::Client, endpoint: U) -> Self {
+        Self {
+            http: client.clone(),
+            endpoint: endpoint.into(),
         }
     }
+
+    pub fn new<U: Into<Url>>(endpoint: U) -> Self {
+        let client = reqwest::Client::new();
+        Self::new_with_client(client, endpoint)
+    }
+
+    pub async fn get<T: serde::Serialize + serde::de::DeserializeOwned>(
+        &self,
+        path: &str,
+    ) -> Result<T, Error> {
+        let target = self.endpoint.join(path)?;
+        
+        // add test to make sure url is formatted correctly
+        assert_eq!(&target.to_string(), "http://127.0.0.1:8003/eth/v1/node/version/");
+        
+        let result: ApiResult<T> = self.http.get(target).send().await?.json().await?;
+
+        match result {
+            ApiResult::Ok(result) => Ok(result),
+            ApiResult::Err(err) => Err(err.into()),
+        }
+    }
+
+    pub async fn post<
+        T: serde::Serialize + serde::de::DeserializeOwned,
+        U: serde::Serialize + serde::de::DeserializeOwned,
+    >(
+        &self,
+        path: &str,
+        argument: &T,
+    ) -> Result<U, Error> {
+        let target = self.endpoint.join(path)?;
+        let result: ApiResult<U> = self
+            .http
+            .post(target)
+            .json(argument)
+            .send()
+            .await?
+            .json()
+            .await?;
+        match result {
+            ApiResult::Ok(result) => Ok(result),
+            ApiResult::Err(err) => Err(err.into()),
+        }
+    }
+
     /* beacon namespace */
     // pub async fn get_genesis_details(&self) -> Result<GenesisDetails, Error> {
-    //     unimplemented!("")
+    //     self.get("/eth/v1/beacon/genesis").await
     // }
 
     // pub async fn get_state_root(id: StateId) -> Result<Root, Error> {
@@ -219,14 +282,11 @@ impl BeaconClient {
     //     unimplemented!("")
     // }
 
-    pub async fn get_node_version(&self, ip_addr: &str, port_id: &str, endpoint: &str, state_id: &str) -> Result<String, Error> {
+    pub async fn get_node_version(self) -> ApiResult<String> {
         
-        let url = format!("http://{}:{}/{}/{}", ip_addr, port_id, endpoint, state_id);
-
-        let response = self.http.get(&url).send().await?;
-        let result: String = response.text().await?;
-
-        Ok(result)
+        let result: ApiResult<String> = ApiResult::Ok(self.get::<String>("/eth/v1/node/version/").await.unwrap());
+        
+        return result;
     }
 
     // pub async fn get_sync_status() -> Result<SyncStatus, Error> {
@@ -319,8 +379,15 @@ impl BeaconClient {
     //     Ok(())
     // }
 
-    // pub async fn register_proposers(
+    // pub async fn prepare_proposers(
     //     registrations: &[BeaconProposerRegistration],
+    // ) -> Result<(), Error> {
+    //     Ok(())
+    // }
+
+    // // endpoint for builder registrations
+    // pub async fn register_validators_with_builders(
+    //     registrations: &[SignedValidatorRegistration],
     // ) -> Result<(), Error> {
     //     Ok(())
     // }
