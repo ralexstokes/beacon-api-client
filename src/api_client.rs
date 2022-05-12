@@ -58,17 +58,17 @@ impl Client {
         &self,
         path: &str,
     ) -> Result<T, Error> {
-        let target = self.endpoint.join(path)?;
-        
-        // add test to make sure url is formatted correctly
-        assert_eq!(&target.to_string(), "http://127.0.0.1:8003/eth/v1/node/version/");
-        
-        let result: ApiResult<T> = self.http.get(target).send().await?.json().await?;
-
+        let result: ApiResult<T> = self.http_get(path).await?.json().await?;
         match result {
             ApiResult::Ok(result) => Ok(result),
             ApiResult::Err(err) => Err(err.into()),
         }
+    }
+
+    pub async fn http_get(&self, path: &str) -> Result<reqwest::Response, Error> {
+        let target = self.endpoint.join(path)?;
+        let response = self.http.get(target).send().await?;
+        Ok(response)
     }
 
     pub async fn post<
@@ -79,19 +79,21 @@ impl Client {
         path: &str,
         argument: &T,
     ) -> Result<U, Error> {
-        let target = self.endpoint.join(path)?;
-        let result: ApiResult<U> = self
-            .http
-            .post(target)
-            .json(argument)
-            .send()
-            .await?
-            .json()
-            .await?;
+        let result: ApiResult<U> = self.http_post(path, argument).await?.json().await?;
         match result {
             ApiResult::Ok(result) => Ok(result),
             ApiResult::Err(err) => Err(err.into()),
         }
+    }
+
+    pub async fn http_post<T: serde::Serialize + serde::de::DeserializeOwned>(
+        &self,
+        path: &str,
+        argument: &T,
+    ) -> Result<reqwest::Response, Error> {
+        let target = self.endpoint.join(path)?;
+        let response = self.http.post(target).json(argument).send().await?;
+        Ok(response)
     }
 
     /* beacon namespace */
