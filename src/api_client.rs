@@ -282,11 +282,9 @@ impl Client {
     //     unimplemented!("")
     // }
 
-    pub async fn get_node_version(self) -> ApiResult<String> {
+    pub async fn get_node_version(&self) -> ApiResult<String> {
         
-        let result: ApiResult<String> = ApiResult::Ok(self.get::<String>("/eth/v1/node/version/").await.unwrap());
-        
-        return result;
+        self.get("/eth/v1/node/version/").await
     }
 
     // pub async fn get_sync_status() -> Result<SyncStatus, Error> {
