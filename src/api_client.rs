@@ -35,6 +35,15 @@ pub enum Error {
     Api(#[from] ApiError),
 }
 
+pub async fn api_error_or_ok(response: reqwest::Response) -> Result<(), Error> {
+    if response.status() == reqwest::StatusCode::OK {
+        Ok(())
+    } else {
+        let api_err = response.json::<ApiError>().await?;
+        Err(Error::Api(api_err))
+    }
+}
+
 pub struct Client {
     http: reqwest::Client,
     endpoint: Url,
