@@ -35,15 +35,6 @@ pub enum Error {
     Api(#[from] ApiError),
 }
 
-pub async fn api_error_or_ok(response: reqwest::Response) -> Result<(), Error> {
-    if response.status() == reqwest::StatusCode::OK {
-        Ok(())
-    } else {
-        let api_err = response.json::<ApiError>().await?;
-        Err(Error::Api(api_err))
-    }
-}
-
 pub struct Client {
     http: reqwest::Client,
     endpoint: Url,
@@ -68,10 +59,11 @@ impl Client {
         path: &str,
     ) -> Result<T, Error> {
         
+        let text: String = self.http_get(path).await?.text().await?;
+        println!("\n\nRESPONSE TEXT: {:?}", &text);
+
         let result: ApiResult<T> = self.http_get(path).await?.json().await?;
-        
-        println!("RESPONSE2: {:?}", serde_json::to_string(&result));
-        
+         
         match result {
             ApiResult::Ok(result) => Ok(result),
             ApiResult::Err(err) => Err(err.into()),
@@ -85,7 +77,7 @@ impl Client {
 
         let response = self.http.get(target).send().await?;
         
-        println!("RESPONSE:  {:?}\n\n", &response);
+        println!("\n\nRESPONSE:  {:?}\n\n", &response);
 
         Ok(response)
     }
