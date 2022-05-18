@@ -7,6 +7,11 @@ use ethereum_consensus::primitives::{
 };
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
+pub struct VersionData {
+    version: String,
+}
+
 #[derive(Serialize, Deserialize)]
 pub struct GenesisDetails {
     #[serde(with = "crate::serde::as_string")]

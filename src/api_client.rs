@@ -5,6 +5,7 @@ use crate::types::{
     FinalityCheckpoints, GenesisDetails, HealthStatus, NetworkIdentity, PeerDescription,
     PeerDescriptor, PeerSummary, ProposerDuty, PubkeyOrIndex, StateId, SyncCommitteeDescriptor,
     SyncCommitteeDuty, SyncCommitteeSummary, SyncStatus, ValidatorDescriptor, ValidatorSummary,
+    Value, VersionData,
 };
 use ethereum_consensus::altair::mainnet::{
     SignedContributionAndProof, SyncCommitteeContribution, SyncCommitteeMessage,
@@ -41,7 +42,6 @@ pub struct Client {
 }
 
 impl Client {
-
     pub fn new_with_client<U: Into<Url>>(client: reqwest::Client, endpoint: U) -> Self {
         Self {
             http: client.clone(),
@@ -58,12 +58,8 @@ impl Client {
         &self,
         path: &str,
     ) -> Result<T, Error> {
-        
-        let text: String = self.http_get(path).await?.text().await?;
-        println!("\n\nRESPONSE TEXT: {:?}", &text);
-
         let result: ApiResult<T> = self.http_get(path).await?.json().await?;
-         
+
         match result {
             ApiResult::Ok(result) => Ok(result),
             ApiResult::Err(err) => Err(err.into()),
@@ -73,11 +69,7 @@ impl Client {
     pub async fn http_get(&self, path: &str) -> Result<reqwest::Response, Error> {
         let target = self.endpoint.join(path)?;
 
-        println!("TARGET: {:?}\n\n", &target);
-
         let response = self.http.get(target).send().await?;
-        
-        println!("\n\nRESPONSE:  {:?}\n\n", &response);
 
         Ok(response)
     }
@@ -295,11 +287,19 @@ impl Client {
         unimplemented!("")
     }
 
-    pub async fn get_node_version(&self) -> Result<String, Error> {
-        
-        let result = self.get::<String>(&"eth/v1/node/version").await.unwrap();
-        Ok(result)
+    pub async fn get_node_version(&self) {
+        let result: ApiResult<Value<VersionData>> = serde_json::from_str(
+            &self
+                .http_get(&"eth/v1/node/version")
+                .await
+                .unwrap()
+                .text()
+                .await
+                .unwrap(),
+        )
+        .unwrap();
 
+        println!("{:?}", &result);
     }
 
     pub async fn get_sync_status() -> Result<SyncStatus, Error> {
@@ -405,4 +405,3 @@ impl Client {
         Ok(())
     }
 }
-
