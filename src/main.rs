@@ -1,10 +1,9 @@
-pub mod api_client;
-pub mod error;
-pub mod serde;
-pub mod types;
+mod api_client;
+mod error;
+mod serde;
+mod types;
 use api_client::Client;
-use tokio::main;
-use url::{ParseError, Url};
+use url::Url;
 
 #[tokio::main]
 async fn main() {

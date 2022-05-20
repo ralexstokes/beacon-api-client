@@ -7,7 +7,7 @@ use ethereum_consensus::primitives::{
 };
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
-#[derive(serde::Serialize, serde::Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct VersionData {
     version: String,
 }

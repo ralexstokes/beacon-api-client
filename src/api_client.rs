@@ -287,7 +287,7 @@ impl Client {
         unimplemented!("")
     }
 
-    pub async fn get_node_version(&self) -> String{
+    pub async fn get_node_version(&self) -> Result<String, Error> {
         let result: serde_json::Value = serde_json::from_str(
             &self
                 .http_get(&"eth/v1/node/version")
@@ -301,8 +301,6 @@ impl Client {
 
 
         return result["data"]["version"].to_string();
-
-        
     }
 
     pub async fn get_sync_status() -> Result<SyncStatus, Error> {
