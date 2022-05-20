@@ -287,19 +287,22 @@ impl Client {
         unimplemented!("")
     }
 
-    pub async fn get_node_version(&self) {
-        let result: ApiResult<Value<VersionData>> = serde_json::from_str(
+    pub async fn get_node_version(&self) -> String{
+        let result: serde_json::Value = serde_json::from_str(
             &self
                 .http_get(&"eth/v1/node/version")
                 .await
                 .unwrap()
                 .text()
                 .await
-                .unwrap(),
+                .unwrap()
         )
         .unwrap();
 
-        println!("{:?}", &result);
+
+        return result["data"]["version"].to_string();
+
+        
     }
 
     pub async fn get_sync_status() -> Result<SyncStatus, Error> {

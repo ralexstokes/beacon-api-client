@@ -12,5 +12,7 @@ async fn main() {
     let url: Url = Url::parse(s).unwrap();
     let client = Client::new(url);
 
-    client.get_node_version().await;
+    let version = client.get_node_version().await;
+
+    println!("node version:\n{}", version);
 }
