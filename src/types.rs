@@ -9,7 +9,7 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct VersionData {
-    version: String,
+    pub version: serde_json::Value,
 }
 
 #[derive(Serialize, Deserialize)]

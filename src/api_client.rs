@@ -36,6 +36,15 @@ pub enum Error {
     Api(#[from] ApiError),
 }
 
+pub async fn api_error_or_ok(response: reqwest::Response) -> Result<(), Error> {
+    if response.status() == reqwest::StatusCode::OK {
+        Ok(())
+    } else {
+        let api_err = response.json::<ApiError>().await?;
+        Err(Error::Api(api_err))
+    }
+}
+
 pub struct Client {
     http: reqwest::Client,
     endpoint: Url,
@@ -58,6 +67,7 @@ impl Client {
         &self,
         path: &str,
     ) -> Result<T, Error> {
+        
         let result: ApiResult<T> = self.http_get(path).await?.json().await?;
 
         match result {
@@ -287,20 +297,15 @@ impl Client {
         unimplemented!("")
     }
 
-    pub async fn get_node_version(&self) -> Result<String, Error> {
-        let result: serde_json::Value = serde_json::from_str(
-            &self
-                .http_get(&"eth/v1/node/version")
-                .await
-                .unwrap()
-                .text()
-                .await
-                .unwrap()
-        )
-        .unwrap();
+    pub async fn get_node_version(&self, endpoint: &str) -> String{
 
+        let result: Result<serde_json::Value, Error> = self.get(endpoint).await;
+        
+        match result {
+            Result::Ok(f) => f["data"]["version"].to_string(),
+            Result::Err(error) => panic!("Problem opening the file: {:?}", error),
+        }
 
-        return result["data"]["version"].to_string();
     }
 
     pub async fn get_sync_status() -> Result<SyncStatus, Error> {
