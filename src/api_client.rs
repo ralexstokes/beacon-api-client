@@ -5,7 +5,7 @@ use crate::types::{
     FinalityCheckpoints, GenesisDetails, HealthStatus, NetworkIdentity, PeerDescription,
     PeerDescriptor, PeerSummary, ProposerDuty, PubkeyOrIndex, StateId, SyncCommitteeDescriptor,
     SyncCommitteeDuty, SyncCommitteeSummary, SyncStatus, ValidatorDescriptor, ValidatorSummary,
-    Value, VersionData,
+    VersionData,
 };
 use ethereum_consensus::altair::mainnet::{
     SignedContributionAndProof, SyncCommitteeContribution, SyncCommitteeMessage,
@@ -67,7 +67,6 @@ impl Client {
         &self,
         path: &str,
     ) -> Result<T, Error> {
-        
         let result: ApiResult<T> = self.http_get(path).await?.json().await?;
 
         match result {
@@ -297,15 +296,13 @@ impl Client {
         unimplemented!("")
     }
 
-    pub async fn get_node_version(&self, endpoint: &str) -> String{
-
+    pub async fn get_node_version(&self, endpoint: &str) -> Result<String, Error> {
         let result: Result<serde_json::Value, Error> = self.get(endpoint).await;
-        
+
         match result {
-            Result::Ok(f) => f["data"]["version"].to_string(),
+            Result::Ok(f) => Ok(f["data"]["version"].to_string()),
             Result::Err(error) => panic!("Problem opening the file: {:?}", error),
         }
-
     }
 
     pub async fn get_sync_status() -> Result<SyncStatus, Error> {
