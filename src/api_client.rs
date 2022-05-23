@@ -6,8 +6,9 @@ use crate::types::{
     ApiResult, AttestationDuty, BalanceSummary, BeaconHeaderSummary, BeaconProposerRegistration,
     BlockId, CommitteeDescriptor, CommitteeFilter, CommitteeSummary, EventTopic,
     FinalityCheckpoints, GenesisDetails, HealthStatus, NetworkIdentity, PeerDescription,
-    PeerDescriptor, PeerSummary, ProposerDuty, PubkeyOrIndex, StateId, SyncCommitteeDescriptor,
-    SyncCommitteeDuty, SyncCommitteeSummary, SyncStatus, ValidatorDescriptor, ValidatorSummary,
+    PeerDescriptor, PeerSummary, ProposerDuty, PubkeyOrIndex, RootData, StateId,
+    SyncCommitteeDescriptor, SyncCommitteeDuty, SyncCommitteeSummary, SyncStatus, ValidatorStatus,
+    ValidatorSummary, Value,
 };
 use ethereum_consensus::altair::mainnet::{
     SignedContributionAndProof, SyncCommitteeContribution, SyncCommitteeMessage,
@@ -23,6 +24,7 @@ use ethereum_consensus::primitives::{
     Bytes32, ChainId, CommitteeIndex, Coordinate, Epoch, ExecutionAddress, RandaoReveal, Root,
     Slot, ValidatorIndex,
 };
+use itertools::Itertools;
 use std::collections::HashMap;
 use thiserror::Error;
 use url::{ParseError, Url};
@@ -46,6 +48,7 @@ pub async fn api_error_or_ok(response: reqwest::Response) -> Result<(), Error> {
     }
 }
 
+#[derive(Clone)]
 pub struct Client {
     http: reqwest::Client,
     endpoint: Url,
@@ -81,10 +84,7 @@ impl Client {
         Ok(response)
     }
 
-    pub async fn post<
-        T: serde::Serialize + serde::de::DeserializeOwned,
-        U: serde::Serialize + serde::de::DeserializeOwned,
-    >(
+    pub async fn post<T: serde::Serialize, U: serde::Serialize + serde::de::DeserializeOwned>(
         &self,
         path: &str,
         argument: &T,
@@ -96,7 +96,7 @@ impl Client {
         }
     }
 
-    pub async fn http_post<T: serde::Serialize + serde::de::DeserializeOwned>(
+    pub async fn http_post<T: serde::Serialize>(
         &self,
         path: &str,
         argument: &T,
@@ -111,12 +111,16 @@ impl Client {
         self.get("/eth/v1/beacon/genesis").await
     }
 
-    pub async fn get_state_root(id: StateId) -> Result<Root, Error> {
-        unimplemented!("")
+    pub async fn get_state_root(&self, state_id: StateId) -> Result<Root, Error> {
+        let path = format!("eth/v1/beacon/states/{state_id}/root");
+        let root: Value<RootData> = self.get(&path).await?;
+        Ok(root.data.root)
     }
 
-    pub async fn get_fork(id: StateId) -> Result<Fork, Error> {
-        unimplemented!("")
+    pub async fn get_fork(&self, state_id: StateId) -> Result<Fork, Error> {
+        let path = format!("eth/v1/beacon/states/{state_id}/fork");
+        let result: Value<Fork> = self.get(&path).await?;
+        Ok(result.data)
     }
 
     pub async fn get_finality_checkpoints(id: StateId) -> Result<FinalityCheckpoints, Error> {
@@ -124,17 +128,39 @@ impl Client {
     }
 
     pub async fn get_validators(
-        id: StateId,
-        filters: &[ValidatorDescriptor],
+        &self,
+        state_id: StateId,
+        validator_ids: &[PubkeyOrIndex],
+        filters: &[ValidatorStatus],
     ) -> Result<Vec<ValidatorSummary>, Error> {
-        unimplemented!("")
+        let path = format!("eth/v1/beacon/states/{state_id}/validators");
+        let target = self.endpoint.join(&path)?;
+        let mut request = self.http.get(target);
+        if !validator_ids.is_empty() {
+            let validator_ids = validator_ids.iter().join(", ");
+            request = request.query(&[("id", validator_ids)]);
+        }
+        if !filters.is_empty() {
+            let filters = filters.iter().join(", ");
+            request = request.query(&[("status", filters)]);
+        }
+        let response = request.send().await?;
+
+        let result: ApiResult<Value<Vec<ValidatorSummary>>> = response.json().await?;
+        match result {
+            ApiResult::Ok(result) => Ok(result.data),
+            ApiResult::Err(err) => Err(err.into()),
+        }
     }
 
     pub async fn get_validator(
-        id: StateId,
+        &self,
+        state_id: StateId,
         validator_id: PubkeyOrIndex,
     ) -> Result<ValidatorSummary, Error> {
-        unimplemented!("")
+        let path = format!("eth/v1/beacon/states/{state_id}/validators/{validator_id}");
+        let result: Value<ValidatorSummary> = self.get(&path).await?;
+        Ok(result.data)
     }
 
     pub async fn get_balances(
@@ -294,8 +320,9 @@ impl Client {
         unimplemented!("")
     }
 
-    pub async fn get_node_version() -> Result<String, Error> {
-        unimplemented!("")
+    pub async fn get_node_version(&self) -> Result<String, Error> {
+        let result: Value<VersionData> = self.get("eth/v1/node/version").await?;
+        Ok(result.data.version)
     }
 
     pub async fn get_sync_status() -> Result<SyncStatus, Error> {

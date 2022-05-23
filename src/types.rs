@@ -6,6 +6,7 @@ use ethereum_consensus::primitives::{
     Version,
 };
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use std::fmt;
 
 #[derive(Serialize, Deserialize)]
 pub struct GenesisDetails {
@@ -24,6 +25,25 @@ pub enum StateId {
     Justified,
     Slot(Slot),
     Root(Root),
+}
+
+impl fmt::Display for StateId {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let printable = match *self {
+            StateId::Finalized => "finalized",
+            StateId::Justified => "justified",
+            StateId::Head => "head",
+            StateId::Genesis => "genesis",
+            StateId::Slot(slot) => return write!(f, "{}", slot),
+            StateId::Root(root) => return write!(f, "{}", root),
+        };
+        write!(f, "{}", printable)
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct RootData {
+    pub root: Root,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -48,7 +68,8 @@ pub struct FinalityCheckpoints {
     pub finalized: Checkpoint,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum ValidatorStatus {
     PendingInitialized,
     PendingQueued,
@@ -59,24 +80,62 @@ pub enum ValidatorStatus {
     ExitedSlashed,
     WithdrawalPossible,
     WithdrawalDone,
-    // TODO what are these?
     Active,
     Pending,
     Exited,
     Withdrawal,
 }
 
+impl fmt::Display for ValidatorStatus {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let printable = match *self {
+            Self::PendingInitialized => "pending_initialized",
+            Self::PendingQueued => "pending_queued",
+            Self::ActiveOngoing => "active_ongoing",
+            Self::ActiveExiting => "active_exiting",
+            Self::ActiveSlashed => "active_slashed",
+            Self::ExitedUnslashed => "exited_unslashed",
+            Self::ExitedSlashed => "exited_slashed",
+            Self::WithdrawalPossible => "withdrawal_possible",
+            Self::WithdrawalDone => "withdrawal_done",
+            Self::Active => "active",
+            Self::Pending => "pending",
+            Self::Exited => "exited",
+            Self::Withdrawal => "withdrawal",
+        };
+        write!(f, "{}", printable)
+    }
+}
+
+#[derive(Debug)]
 pub enum PubkeyOrIndex {
     Pubkey(BlsPublicKey),
     Index(ValidatorIndex),
 }
 
-pub struct ValidatorDescriptor {
-    pub pubkey_or_index: PubkeyOrIndex,
-    pub status: ValidatorStatus,
+impl fmt::Display for PubkeyOrIndex {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let printable = match *self {
+            Self::Pubkey(ref pk) => pk.to_string(),
+            Self::Index(i) => i.to_string(),
+        };
+        write!(f, "{}", printable)
+    }
 }
 
-#[derive(Serialize, Deserialize)]
+impl From<ValidatorIndex> for PubkeyOrIndex {
+    fn from(index: ValidatorIndex) -> Self {
+        Self::Index(index)
+    }
+}
+
+impl From<BlsPublicKey> for PubkeyOrIndex {
+    fn from(public_key: BlsPublicKey) -> Self {
+        Self::Pubkey(public_key)
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ValidatorSummary {
     #[serde(with = "crate::serde::as_string")]
     pub index: ValidatorIndex,
