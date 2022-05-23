@@ -301,7 +301,7 @@ impl Client {
 
         match result {
             Result::Ok(res) => Ok(res.data["version"].to_string()),
-            Result::Err(error) => panic!("Problem opening the file: {:?}", error),
+            Result::Err(error) => panic!("Problem making HTTP equest:\n {:?}", error),
         }
     }
 
