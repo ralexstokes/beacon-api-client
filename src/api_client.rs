@@ -297,10 +297,10 @@ impl Client {
     }
 
     pub async fn get_node_version(&self, endpoint: &str) -> Result<String, Error> {
-        let result: Result<serde_json::Value, Error> = self.get(endpoint).await;
+        let result: Result<VersionData, Error> = self.get(endpoint).await;
 
         match result {
-            Result::Ok(f) => Ok(f["data"]["version"].to_string()),
+            Result::Ok(res) => Ok(res.data["version"].to_string()),
             Result::Err(error) => panic!("Problem opening the file: {:?}", error),
         }
     }
