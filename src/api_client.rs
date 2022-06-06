@@ -8,7 +8,7 @@ use crate::types::{
     FinalityCheckpoints, GenesisDetails, HealthStatus, NetworkIdentity, PeerDescription,
     PeerDescriptor, PeerSummary, ProposerDuty, PubkeyOrIndex, RootData, StateId,
     SyncCommitteeDescriptor, SyncCommitteeDuty, SyncCommitteeSummary, SyncStatus, ValidatorStatus,
-    ValidatorSummary, Value,
+    ValidatorSummary, Value, VersionData,
 };
 use ethereum_consensus::altair::mainnet::{
     SignedContributionAndProof, SyncCommitteeContribution, SyncCommitteeMessage,
