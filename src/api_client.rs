@@ -6,7 +6,7 @@ use crate::types::{
     ApiResult, AttestationDuty, BalanceSummary, BeaconHeaderSummary, BeaconProposerRegistration,
     BlockId, CommitteeDescriptor, CommitteeFilter, CommitteeSummary, EventTopic,
     FinalityCheckpoints, GenesisDetails, HealthStatus, NetworkIdentity, PeerDescription,
-    PeerDescriptor, PeerSummary, ProposerDuty, PublicKeyOrIndex, Query, RootData, StateId,
+    PeerDescriptor, PeerSummary, ProposerDuty, PublicKeyOrIndex, RootData, StateId,
     SyncCommitteeDescriptor, SyncCommitteeDuty, SyncCommitteeSummary, SyncStatus, ValidatorStatus,
     ValidatorSummary, Value, VersionData,
 };
@@ -89,17 +89,18 @@ impl Client {
     }
 
     pub async fn get_with_query<
-        T: serde::Serialize,
         U: serde::Serialize + serde::de::DeserializeOwned,
+        K: serde::Serialize + Sized,
+        V: serde::Serialize
     >(
         &self,
         path: &str,
-        query: Vec<Query<T>>,
+        query: Vec<(K, V)>,
     ) -> Result<U, Error> {
         let target = self.endpoint.join(path)?;
         let mut request = self.http.get(target);
         for q in query.iter() {
-            request = request.query(&[(&q.key, &q.value)]);
+            request = request.query(&[q]);
         }
         let response = request.send().await?;
         let result: ApiResult<U> = self.http_get(path).await?.json().await?;
@@ -166,14 +167,14 @@ impl Client {
     ) -> Result<Vec<ValidatorSummary>, Error> {
         let path = format!("eth/v1/beacon/states/{state_id}/validators");
         let mut queries = vec![];
+        
         if !validator_ids.is_empty() {
-            queries.push(Query::new("id".to_string(), validator_ids));
+            queries.push(("id".to_string(), validator_ids));
         }
-        // commenting out optional query param until
-        // get_with_query() can handle multiple types
-        // if !filters.is_empty() {
-        //     queries.push(Query::new("status".to_string(), filters));
-        // }
+
+        if !filters.is_empty() {
+            queries.push(("status".to_string(), filters));
+        }
         let result: Value<Vec<ValidatorSummary>> = self.get_with_query(&path, queries).await?;
         Ok(result.data)
     }
@@ -196,7 +197,7 @@ impl Client {
         let path = format!("eth/v1/beacon/states/{id}/validator_balances");
         let mut query = vec![];
         if !filters.is_empty() {
-            query.push(Query::new("id".to_string(), filters));
+            query.push(("id".to_string(), filters));
         }
         let result: Value<Vec<BalanceSummary>> = self.get_with_query(&path, query).await?;
         Ok(result.data)

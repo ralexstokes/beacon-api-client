@@ -9,20 +9,6 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fmt;
 
-#[derive(Serialize, Deserialize)]
-pub struct Query<T> {
-    pub key: String,
-    pub value: T,
-}
-
-impl<T> Query<T> {
-    pub fn new(key: String, value: T) -> Query<T> {
-        Query {
-            key: key,
-            value: value,
-        }
-    }
-}
 
 #[derive(Serialize, Deserialize)]
 pub struct VersionData {
