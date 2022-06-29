@@ -9,6 +9,11 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fmt;
 
+#[derive(Serialize, Deserialize)]
+pub enum QueryParam {
+    ValidatorStatus(Vec<ValidatorStatus>),
+    PublicKeyOrIndex(Vec<PublicKeyOrIndex>),
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct VersionData {
@@ -127,7 +132,7 @@ impl fmt::Display for ValidatorStatus {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum PublicKeyOrIndex {
     PublicKey(BlsPublicKey),
     Index(ValidatorIndex),
