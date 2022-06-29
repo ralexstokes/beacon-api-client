@@ -6,7 +6,7 @@ use crate::types::{
     ApiResult, AttestationDuty, BalanceSummary, BeaconHeaderSummary, BeaconProposerRegistration,
     BlockId, CommitteeDescriptor, CommitteeFilter, CommitteeSummary, EventTopic,
     FinalityCheckpoints, GenesisDetails, HealthStatus, NetworkIdentity, PeerDescription,
-    PeerDescriptor, PeerSummary, ProposerDuty, PublicKeyOrIndex, RootData, StateId,
+    PeerDescriptor, PeerSummary, ProposerDuty, PublicKeyOrIndex, Query, RootData, StateId,
     SyncCommitteeDescriptor, SyncCommitteeDuty, SyncCommitteeSummary, SyncStatus, ValidatorStatus,
     ValidatorSummary, Value, VersionData,
 };
@@ -88,6 +88,27 @@ impl Client {
         Ok(response)
     }
 
+    pub async fn get_with_query<
+        T: serde::Serialize,
+        U: serde::Serialize + serde::de::DeserializeOwned,
+    >(
+        &self,
+        path: &str,
+        query: Vec<Query<T>>,
+    ) -> Result<U, Error> {
+        let target = self.endpoint.join(path)?;
+        let mut request = self.http.get(target);
+        for q in query.iter() {
+            request = request.query(&[(&q.key, &q.value)]);
+        }
+        let response = request.send().await?;
+        let result: ApiResult<U> = self.http_get(path).await?.json().await?;
+        match result {
+            ApiResult::Ok(result) => Ok(result),
+            ApiResult::Err(err) => Err(err.into()),
+        }
+    }
+
     pub async fn post<T: serde::Serialize, U: serde::Serialize + serde::de::DeserializeOwned>(
         &self,
         path: &str,
@@ -144,23 +165,17 @@ impl Client {
         filters: &[ValidatorStatus],
     ) -> Result<Vec<ValidatorSummary>, Error> {
         let path = format!("eth/v1/beacon/states/{state_id}/validators");
-        let target = self.endpoint.join(&path)?;
-        let mut request = self.http.get(target);
+        let mut queries = vec![];
         if !validator_ids.is_empty() {
-            let validator_ids = validator_ids.iter().join(", ");
-            request = request.query(&[("id", validator_ids)]);
+            queries.push(Query::new("id".to_string(), validator_ids));
         }
-        if !filters.is_empty() {
-            let filters = filters.iter().join(", ");
-            request = request.query(&[("status", filters)]);
-        }
-        let response = request.send().await?;
-
-        let result: ApiResult<Value<Vec<ValidatorSummary>>> = response.json().await?;
-        match result {
-            ApiResult::Ok(result) => Ok(result.data),
-            ApiResult::Err(err) => Err(err.into()),
-        }
+        // commenting out optional query param until
+        // get_with_query() can handle multiple types
+        // if !filters.is_empty() {
+        //     queries.push(Query::new("status".to_string(), filters));
+        // }
+        let result: Value<Vec<ValidatorSummary>> = self.get_with_query(&path, queries).await?;
+        Ok(result.data)
     }
 
     pub async fn get_validator(
@@ -179,20 +194,12 @@ impl Client {
         filters: &[PublicKeyOrIndex],
     ) -> Result<Vec<BalanceSummary>, Error> {
         let path = format!("eth/v1/beacon/states/{id}/validator_balances");
-        let target = self.endpoint.join(&path)?;
-        let mut request = self.http.get(target);
-
+        let mut query = vec![];
         if !filters.is_empty() {
-            let filters = filters.iter().join(", ");
-            request = request.query(&[("id", filters)]);
+            query.push(Query::new("id".to_string(), filters));
         }
-        let response = request.send().await?;
-
-        let result: ApiResult<Value<Vec<BalanceSummary>>> = response.json().await?;
-        match result {
-            ApiResult::Ok(result) => Ok(result.data),
-            ApiResult::Err(err) => Err(err.into()),
-        }
+        let result: Value<Vec<BalanceSummary>> = self.get_with_query(&path, query).await?;
+        Ok(result.data)
     }
 
     pub async fn get_all_committees(&self, id: StateId) -> Result<Vec<CommitteeSummary>, Error> {

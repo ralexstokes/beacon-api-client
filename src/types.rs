@@ -10,6 +10,21 @@ use std::collections::HashMap;
 use std::fmt;
 
 #[derive(Serialize, Deserialize)]
+pub struct Query<T> {
+    pub key: String,
+    pub value: T,
+}
+
+impl<T> Query<T> {
+    pub fn new(key: String, value: T) -> Query<T> {
+        Query {
+            key: key,
+            value: value,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct VersionData {
     pub version: String,
 }
@@ -126,7 +141,7 @@ impl fmt::Display for ValidatorStatus {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub enum PublicKeyOrIndex {
     PublicKey(BlsPublicKey),
     Index(ValidatorIndex),
