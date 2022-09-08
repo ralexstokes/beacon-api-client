@@ -233,7 +233,7 @@ impl Client {
     }
 
     pub async fn get_beacon_header_at_head(&self) -> Result<BeaconHeaderSummaryOuter, Error> {
-        let result: BeaconHeaderSummaryOuter = self.get(&"eth/v1/beacon/headers/head").await?;
+        let result: BeaconHeaderSummaryOuter = self.get("eth/v1/beacon/headers/head").await?;
         Ok(result)
     }
 
