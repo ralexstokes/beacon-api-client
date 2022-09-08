@@ -199,6 +199,12 @@ pub struct SyncCommitteeSummary {
 }
 
 #[derive(Serialize, Deserialize)]
+pub struct BeaconHeaderSummaryOuter {
+    pub execution_optimistic: bool,
+    pub header_summary: BeaconHeaderSummary,
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct BeaconHeaderSummary {
     pub root: Root,
     pub canonical: bool,

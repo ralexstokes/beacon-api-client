@@ -3,11 +3,11 @@
 
 use crate::error::ApiError;
 use crate::types::{
-    ApiResult, AttestationDuty, BalanceSummary, BeaconHeaderSummary, BeaconProposerRegistration,
-    BlockId, CommitteeDescriptor, CommitteeFilter, CommitteeSummary, EventTopic,
-    FinalityCheckpoints, GenesisDetails, HealthStatus, PeerSummary, ProposerDuty, PublicKeyOrIndex,
-    RootData, StateId, SyncCommitteeDescriptor, SyncCommitteeDuty, SyncCommitteeSummary,
-    SyncStatus, ValidatorStatus, ValidatorSummary, Value, VersionData,
+    ApiResult, AttestationDuty, BalanceSummary, BeaconHeaderSummary, BeaconHeaderSummaryOuter,
+    BeaconProposerRegistration, BlockId, CommitteeDescriptor, CommitteeFilter, CommitteeSummary,
+    EventTopic, FinalityCheckpoints, GenesisDetails, HealthStatus, PeerSummary, ProposerDuty,
+    PublicKeyOrIndex, RootData, StateId, SyncCommitteeDescriptor, SyncCommitteeDuty,
+    SyncCommitteeSummary, SyncStatus, ValidatorStatus, ValidatorSummary, Value, VersionData,
 };
 #[cfg(feature = "peer-id")]
 use crate::types::{NetworkIdentity, PeerDescription, PeerDescriptor};
@@ -232,11 +232,15 @@ impl Client {
         unimplemented!("")
     }
 
-    pub async fn get_beacon_header_at_head(&self) -> Result<BeaconHeaderSummary, Error> {
-        unimplemented!("")
+    pub async fn get_beacon_header_at_head(&self) -> Result<BeaconHeaderSummaryOuter, Error> {
+        let result: BeaconHeaderSummaryOuter = self.get(&"eth/v1/beacon/headers/head").await?;
+        Ok(result)
     }
 
-    pub async fn get_beacon_header_for_slot(slot: Slot) -> Result<BeaconHeaderSummary, Error> {
+    pub async fn get_beacon_header_for_slot(
+        &self,
+        slot: Slot,
+    ) -> Result<BeaconHeaderSummary, Error> {
         unimplemented!("")
     }
 
