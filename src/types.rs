@@ -18,9 +18,9 @@ pub struct VersionData {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Coordinate {
     #[serde(with = "crate::serde::as_string")]
-    slot: Slot,
-    root: Root,
-    execution_optimistic: bool,
+    pub slot: Slot,
+    pub root: Root,
+    pub execution_optimistic: bool,
 }
 
 #[derive(Serialize, Deserialize)]
