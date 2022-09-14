@@ -11,10 +11,6 @@ use crate::types::{
 };
 #[cfg(feature = "peer-id")]
 use crate::types::{NetworkIdentity, PeerDescription, PeerDescriptor};
-use ethereum_consensus::phase0::mainnet::{
-    Attestation, AttestationData, AttesterSlashing, BeaconBlock, BeaconState, Fork,
-    ProposerSlashing, SignedAggregateAndProof, SignedBeaconBlock, SignedVoluntaryExit,
-};
 use ethereum_consensus::altair::mainnet::{
     SignedContributionAndProof, SyncCommitteeContribution, SyncCommitteeMessage,
 };
@@ -22,6 +18,10 @@ use ethereum_consensus::bellatrix::mainnet::{BlindedBeaconBlock, SignedBlindedBe
 use ethereum_consensus::builder::SignedValidatorRegistration;
 #[cfg(feature = "peer-id")]
 use ethereum_consensus::networking::Multiaddr;
+use ethereum_consensus::phase0::mainnet::{
+    Attestation, AttestationData, AttesterSlashing, BeaconBlock, BeaconState, Fork,
+    ProposerSlashing, SignedAggregateAndProof, SignedBeaconBlock, SignedVoluntaryExit,
+};
 use ethereum_consensus::primitives::{
     Bytes32, CommitteeIndex, Epoch, RandaoReveal, Root, Slot, ValidatorIndex,
 };
