@@ -11,7 +11,7 @@ use crate::types::{
 };
 #[cfg(feature = "peer-id")]
 use crate::types::{NetworkIdentity, PeerDescription, PeerDescriptor};
-use ethereum_consensus::altair::mainnet::{
+use ethereum_consensus::phase0::mainnet::{
     Attestation, AttestationData, AttesterSlashing, BeaconBlock, BeaconState, Fork,
     ProposerSlashing, SignedAggregateAndProof, SignedBeaconBlock, SignedVoluntaryExit,
 };
