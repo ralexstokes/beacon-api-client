@@ -1,6 +1,14 @@
 mod common;
 use http::StatusCode;
 
+/*
+Helpers to me include the following functions
+- get
+- http_get
+- post
+- http_post
+*/
+
 #[tokio::test]
 async fn test_http_get() {
     let clinet = common::setup();
