@@ -29,7 +29,7 @@ pub struct DepositContract {
     pub address: ExecutionAddress,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct GenesisDetails {
     #[serde(with = "crate::serde::as_string")]
     pub genesis_time: u64,
@@ -95,7 +95,7 @@ enum ExecutionStatus {
     Optimistic,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct FinalityCheckpoints {
     pub previous_justified: Checkpoint,
     pub current_justified: Checkpoint,
@@ -179,7 +179,7 @@ pub struct ValidatorSummary {
     pub validator: Validator,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct BalanceSummary {
     #[serde(with = "crate::serde::as_string")]
     pub index: ValidatorIndex,
@@ -194,7 +194,7 @@ pub struct CommitteeFilter {
     pub slot: Option<Slot>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct CommitteeSummary {
     #[serde(with = "crate::serde::as_string")]
     pub index: CommitteeIndex,
@@ -218,7 +218,7 @@ pub struct BeaconHeaderSummary {
     pub canonical: bool,
     pub signed_header: SignedBeaconBlockHeader,
 }
-
+#[derive(Serialize, Deserialize)]
 pub enum EventTopic {
     Head,
     Block,
