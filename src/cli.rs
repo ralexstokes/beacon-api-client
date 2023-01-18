@@ -42,7 +42,7 @@ pub async fn cli(args: CliArgs) {
 }
 
 pub fn parse_state_id(state_id: String) -> StateId {
-    let mut state: StateId;
+    let state: StateId;
     if state_id.contains("finalized") |
         state_id.contains("Finalized") |
         state_id.contains("FINALIZED")
@@ -72,5 +72,5 @@ pub fn parse_state_id(state_id: String) -> StateId {
             }
         }
     }
-    return state
+    state
 }
