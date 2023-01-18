@@ -20,37 +20,41 @@ pub async fn cli(args: CliArgs) {
         }
         "root" => {
             let state: StateId;
-            if args.payload.contains("finalized") |
-                args.payload.contains("Finalized") |
-                args.payload.contains("FINALIZED")
-            {
-                state = StateId::Finalized;
-            } else if args.payload.contains("justified") |
-                args.payload.contains("Justified") |
-                args.payload.contains("JUSTIFIED")
-            {
-                state = StateId::Justified;
-            } else if args.payload.contains("genesis") |
-                args.payload.contains("Genesis") |
-                args.payload.contains("GENESIS")
-            {
-                state = StateId::Genesis;
-            } else if args.payload.contains("0x") {
-                assert_eq!(args.payload.as_bytes().len(), 32, "malformed root in request payload");
-                let bytes: [u8; 32] = args.payload.as_bytes().try_into().unwrap();
-                state = StateId::Root(Root::from_bytes(bytes));
-            } else {
-                let check_numeric = args.payload.trim().parse::<u64>();
-                match check_numeric {
-                    Ok(_ok) => state = StateId::Slot(check_numeric.unwrap()),
-                    Err(_e) => {
-                        println!("error in request payload: please check formats");
-                        state = StateId::Slot(0)
+            if let Some(state_id) = args.state_id {
+                if state_id.contains("finalized") |
+                    state_id.contains("Finalized") |
+                    state_id.contains("FINALIZED")
+                {
+                    state = StateId::Finalized;
+                } else if state_id.contains("justified") |
+                    state_id.contains("Justified") |
+                    state_id.contains("JUSTIFIED")
+                {
+                    state = StateId::Justified;
+                } else if state_id.contains("genesis") |
+                    state_id.contains("Genesis") |
+                    state_id.contains("GENESIS")
+                {
+                    state = StateId::Genesis;
+                } else if state_id.contains("0x") {
+                    assert_eq!(state_id.as_bytes().len(), 32, "malformed root in request payload");
+                    let bytes: [u8; 32] = state_id.as_bytes().try_into().unwrap();
+                    state = StateId::Root(Root::from_bytes(bytes));
+                } else {
+                    let check_numeric = state_id.trim().parse::<u64>();
+                    match check_numeric {
+                        Ok(_ok) => state = StateId::Slot(check_numeric.unwrap()),
+                        Err(_e) => {
+                            println!("error in request payload: please check formats");
+                            state = StateId::Slot(0)
+                        }
                     }
                 }
+                let out: Root = client.get_state_root(state).await.unwrap();
+                println!("{out:?}");
+            } else {
+                println!("no state-id provided");
             }
-            let out: Root = client.get_state_root(state).await.unwrap();
-            println!("{out:?}");
         }
 
         _ => println!("something else"),
