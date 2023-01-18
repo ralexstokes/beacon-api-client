@@ -1,1 +1,0 @@
-"Lighthouse/v3.1.0-aa022f4/x86_64-linux"
