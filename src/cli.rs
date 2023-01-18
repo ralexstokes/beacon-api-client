@@ -1,9 +1,8 @@
 use crate::{CliArgs, Client, GenesisDetails, StateId};
-use ethereum_consensus::primitives::{Root, Slot};
-use std::str::Bytes;
+use ethereum_consensus::primitives::{Root};
 use url::Url;
 
-pub async fn parseCli(args: CliArgs) {
+pub async fn cli(args: CliArgs) {
     //set up client
     let s = args.node_url;
     let url: Url = Url::parse(&s).unwrap();
@@ -43,15 +42,15 @@ pub async fn parseCli(args: CliArgs) {
             } else {
                 let check_numeric = args.payload.trim().parse::<u64>();
                 match check_numeric {
-                    Ok(ok) => state = StateId::Slot(check_numeric.unwrap()),
-                    Err(e) => {
+                    Ok(_ok) => state = StateId::Slot(check_numeric.unwrap()),
+                    Err(_e) => {
                         println!("error in request payload: please check formats");
                         state = StateId::Slot(0)
                     }
                 }
             }
             let out: Root = client.get_state_root(state).await.unwrap();
-            println!("{:?}", out);
+            println!("{out:?}");
         }
 
         _ => println!("something else"),
