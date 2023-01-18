@@ -21,19 +21,19 @@ pub async fn parseCli(args: CliArgs) {
         }
         "root" => {
             let state: StateId;
-            if args.payload.contains("finalized")
-                | args.payload.contains("Finalized")
-                | args.payload.contains("FINALIZED")
+            if args.payload.contains("finalized") |
+                args.payload.contains("Finalized") |
+                args.payload.contains("FINALIZED")
             {
                 state = StateId::Finalized;
-            } else if args.payload.contains("justified")
-                | args.payload.contains("Justified")
-                | args.payload.contains("JUSTIFIED")
+            } else if args.payload.contains("justified") |
+                args.payload.contains("Justified") |
+                args.payload.contains("JUSTIFIED")
             {
                 state = StateId::Justified;
-            } else if args.payload.contains("genesis")
-                | args.payload.contains("Genesis")
-                | args.payload.contains("GENESIS")
+            } else if args.payload.contains("genesis") |
+                args.payload.contains("Genesis") |
+                args.payload.contains("GENESIS")
             {
                 state = StateId::Genesis;
             } else if args.payload.contains("0x") {
