@@ -1,6 +1,5 @@
-use beacon_api_client::{cli, CliArgs, Client, StateId};
+use beacon_api_client::{cli, CliArgs};
 use clap::Parser;
-use url::Url;
 
 #[tokio::main]
 async fn main() {
