@@ -1,5 +1,5 @@
 use crate::{CliArgs, Client, GenesisDetails, StateId};
-use ethereum_consensus::primitives::{Root};
+use ethereum_consensus::primitives::Root;
 use url::Url;
 
 pub async fn cli(args: CliArgs) {
