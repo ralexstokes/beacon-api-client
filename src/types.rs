@@ -19,7 +19,11 @@ pub struct CliArgs {
     #[clap(short, long)]
     pub endpoint: String,
     #[clap(short, long)]
-    pub payload: String,
+    pub state_id: Option<String>,
+    #[clap(short, long)]
+    pub id: Option<String>,
+    #[clap(short, long)]
+    pub validator_status: Option<String>,
 }
 
 #[derive(Serialize, Deserialize)]
