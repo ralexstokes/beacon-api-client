@@ -1,4 +1,5 @@
 use crate::error::ApiError;
+use clap::Parser;
 use ethereum_consensus::{
     networking::{Enr, MetaData, Multiaddr, PeerId},
     phase0::mainnet::{Checkpoint, SignedBeaconBlockHeader, Validator},
@@ -9,6 +10,17 @@ use ethereum_consensus::{
 };
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::{collections::HashMap, fmt};
+
+#[derive(Parser, Default, Debug)]
+#[clap(version, about = "Beacon API client")]
+pub struct CliArgs {
+    #[clap(short, long)]
+    pub node_url: String,
+    #[clap(short, long)]
+    pub endpoint: String,
+    #[clap(short, long)]
+    pub payload: String,
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct VersionData {
@@ -30,7 +42,7 @@ pub struct DepositContract {
     pub address: ExecutionAddress,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct GenesisDetails {
     #[serde(with = "crate::serde::as_string")]
     pub genesis_time: u64,
