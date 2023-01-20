@@ -1,5 +1,5 @@
 use crate::error::ApiError;
-use clap::{Parser, Args, Subcommand};
+use clap::{Args, Parser, Subcommand};
 use ethereum_consensus::{
     networking::{Enr, MetaData, Multiaddr, PeerId},
     phase0::mainnet::{Checkpoint, SignedBeaconBlockHeader, Validator},
@@ -39,7 +39,6 @@ pub struct Config {
     pub args: Option<String>,
 }
 
-
 #[derive(Debug, Clone, clap::ValueEnum)]
 pub enum Namespace {
     Beacon,
@@ -61,7 +60,6 @@ impl fmt::Display for Namespace {
         write!(f, "{printable}")
     }
 }
-
 
 #[derive(Debug, Clone, clap::ValueEnum)]
 pub enum Method {
@@ -108,56 +106,53 @@ pub enum Method {
     Version,
     Syncing,
     Health,
-
 }
 
 impl fmt::Display for Method {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let printable = match *self {
-            Method::Genesis=>"genesis",
-            Method::Root=>"root",
-            Method::Fork=>"fork",
-            Method::FinalityCheckpoints=>"finality_checkpoints",
-            Method::Validator=>"validator",
-            Method::Validators=>"validators",
-            Method::ValidatorBalances=>"validator_balances",
-            Method::Committees=>"committees",
-            Method::SyncCommittees=>"sync_committees",
-            Method::Header=>"header",
-            Method::Headers=>"headers",
-            Method::Block=>"block",
-            Method::Blocks=>"blocks",
-            Method::BlindedBlocks=>"blinded_blocks",
-            Method::BlockRoot=>"block_root",
-            Method::BlockAttestations=>"block_attestations",
-            Method::PoolAttestations=>"pool_attestations",
-            Method::PostAttestations=>"post_attestations",
-            Method::AttesterSlashing=>"attester_slashing",
-            Method::PostAttesterSlashing=>"post_attester_slashing",
-            Method::ProposerSlashing=>"proposer_slashing",
-            Method::PostProposerSlashing=>"post_proposer_slashing",
-            Method::PostSyncCommittees=>"post_sync_committees",
-            Method::VoluntaryExits=>"voluntary_exits",
-            Method::PostVoluntaryExits=>"post_voluntary_exits",
-            Method::ForkSchedule=>"fork_schedule",
-            Method::Spec=>"spec",
-            Method::DepositContract=>"deposit_contract",
-            Method::State=>"state",
-            Method::Head=>"head",
-            Method::Events=>"events",
-            Method::Identity=>"identity",
-            Method::Peer=>"peer",
-            Method::Peers=>"peers",
-            Method::PeerCount=>"peer-count",
-            Method::Version=>"version",
-            Method::Syncing=>"syncing",
-            Method::Health=>"health",
+            Method::Genesis => "genesis",
+            Method::Root => "root",
+            Method::Fork => "fork",
+            Method::FinalityCheckpoints => "finality_checkpoints",
+            Method::Validator => "validator",
+            Method::Validators => "validators",
+            Method::ValidatorBalances => "validator_balances",
+            Method::Committees => "committees",
+            Method::SyncCommittees => "sync_committees",
+            Method::Header => "header",
+            Method::Headers => "headers",
+            Method::Block => "block",
+            Method::Blocks => "blocks",
+            Method::BlindedBlocks => "blinded_blocks",
+            Method::BlockRoot => "block_root",
+            Method::BlockAttestations => "block_attestations",
+            Method::PoolAttestations => "pool_attestations",
+            Method::PostAttestations => "post_attestations",
+            Method::AttesterSlashing => "attester_slashing",
+            Method::PostAttesterSlashing => "post_attester_slashing",
+            Method::ProposerSlashing => "proposer_slashing",
+            Method::PostProposerSlashing => "post_proposer_slashing",
+            Method::PostSyncCommittees => "post_sync_committees",
+            Method::VoluntaryExits => "voluntary_exits",
+            Method::PostVoluntaryExits => "post_voluntary_exits",
+            Method::ForkSchedule => "fork_schedule",
+            Method::Spec => "spec",
+            Method::DepositContract => "deposit_contract",
+            Method::State => "state",
+            Method::Head => "head",
+            Method::Events => "events",
+            Method::Identity => "identity",
+            Method::Peer => "peer",
+            Method::Peers => "peers",
+            Method::PeerCount => "peer-count",
+            Method::Version => "version",
+            Method::Syncing => "syncing",
+            Method::Health => "health",
         };
         write!(f, "{printable}")
     }
 }
-
-
 
 #[derive(Serialize, Deserialize)]
 pub struct VersionData {
