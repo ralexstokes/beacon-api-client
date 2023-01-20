@@ -16,7 +16,6 @@ pub fn run_cli(args: &Config){
 }
 
 
-
 pub fn parse_args(args: &Config) {
     let namespace = &args.namespace;
     let mut namespace_method_ok: bool = false;
@@ -45,7 +44,22 @@ pub fn check_method_in_ns(method: &Method, namespace: &Namespace) -> bool {
                 Method::ValidatorBalances => return true,
                 Method::Committees => return true,
                 Method::SyncCommittees => return true,
+                Method::Header => return true,
                 Method::Headers => return true,
+                Method::Block => return true,
+                Method::Blocks => return true,
+                Method::BlindedBlocks => return true,
+                Method::BlockRoot => return true,
+                Method::BlockAttestations => return true,
+                Method::PoolAttestations => return true,
+                Method::PostAttestations => return true,
+                Method::AttesterSlashing => return true,
+                Method::PostAttesterSlashing => return true,
+                Method::ProposerSlashing => return true,
+                Method::PostProposerSlashing => return true,
+                Method::PostSyncCommittees => return true,
+                Method::VoluntaryExits => return true,
+                Method::PostVoluntaryExits => return true,
                 _ => return false
             }
         },
@@ -75,6 +89,10 @@ pub fn check_method_in_ns(method: &Method, namespace: &Namespace) -> bool {
                 Method::Identity => return true,
                 Method::Peer=> return true,
                 Method::Peers=> return true,
+                Method::PeerCount=>return true,
+                Method::Version=> return true,
+                Method::Syncing=> return true,
+                Method::Health=>return true,
                 _ => return false
             }
         },

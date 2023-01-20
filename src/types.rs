@@ -75,7 +75,22 @@ pub enum Method {
     ValidatorBalances,
     Committees,
     SyncCommittees,
+    Header,
     Headers,
+    Block,
+    Blocks,
+    BlindedBlocks,
+    BlockRoot,
+    BlockAttestations,
+    PoolAttestations,
+    PostAttestations,
+    AttesterSlashing,
+    PostAttesterSlashing,
+    ProposerSlashing,
+    PostProposerSlashing,
+    PostSyncCommittees,
+    VoluntaryExits,
+    PostVoluntaryExits,
     //Config ns
     ForkSchedule,
     Spec,
@@ -89,6 +104,11 @@ pub enum Method {
     Identity,
     Peer,
     Peers,
+    PeerCount,
+    Version,
+    Syncing,
+    Health,
+
 }
 
 impl fmt::Display for Method {
@@ -103,7 +123,22 @@ impl fmt::Display for Method {
             Method::ValidatorBalances=>"validator_balances",
             Method::Committees=>"committees",
             Method::SyncCommittees=>"sync_committees",
+            Method::Header=>"header",
             Method::Headers=>"headers",
+            Method::Block=>"block",
+            Method::Blocks=>"blocks",
+            Method::BlindedBlocks=>"blinded_blocks",
+            Method::BlockRoot=>"block_root",
+            Method::BlockAttestations=>"block_attestations",
+            Method::PoolAttestations=>"pool_attestations",
+            Method::PostAttestations=>"post_attestations",
+            Method::AttesterSlashing=>"attester_slashing",
+            Method::PostAttesterSlashing=>"post_attester_slashing",
+            Method::ProposerSlashing=>"proposer_slashing",
+            Method::PostProposerSlashing=>"post_proposer_slashing",
+            Method::PostSyncCommittees=>"post_sync_committees",
+            Method::VoluntaryExits=>"voluntary_exits",
+            Method::PostVoluntaryExits=>"post_voluntary_exits",
             Method::ForkSchedule=>"fork_schedule",
             Method::Spec=>"spec",
             Method::DepositContract=>"deposit_contract",
@@ -113,13 +148,14 @@ impl fmt::Display for Method {
             Method::Identity=>"identity",
             Method::Peer=>"peer",
             Method::Peers=>"peers",
+            Method::PeerCount=>"peer-count",
+            Method::Version=>"version",
+            Method::Syncing=>"syncing",
+            Method::Health=>"health",
         };
         write!(f, "{printable}")
     }
 }
-
-
-
 
 
 
