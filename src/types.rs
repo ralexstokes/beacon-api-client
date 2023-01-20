@@ -1,5 +1,5 @@
 use crate::error::ApiError;
-use clap::{Args, Parser, Subcommand};
+use clap::Parser;
 use ethereum_consensus::{
     networking::{Enr, MetaData, Multiaddr, PeerId},
     phase0::mainnet::{Checkpoint, SignedBeaconBlockHeader, Validator},
@@ -10,21 +10,6 @@ use ethereum_consensus::{
 };
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::{collections::HashMap, fmt};
-
-// #[derive(Parser, Default, Debug)]
-// #[clap(version, about = "Beacon API client")]
-// pub struct Config {
-//     #[clap(short, long)]
-//     pub node_url: String,
-//     #[clap(short, long)]
-//     pub method: String,
-//     #[clap(short, long)]
-//     pub state_id: Option<String>,
-//     #[clap(short, long)]
-//     pub id: Option<String>,
-//     #[clap(short, long)]
-//     pub validator_status: Option<String>,
-// }
 
 #[derive(Debug, Parser)]
 #[clap(version, about = "Beacon API client")]
