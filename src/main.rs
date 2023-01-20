@@ -6,7 +6,7 @@ async fn main() {
     let config = Config::parse();
     println!("\nReturn val: ");
     run_cli(&config).await;
-    
+
     println!("\nCLI args:");
     println!(
         "endpoint: {:?}\nnamespace: {:?}\nmethod: {:?}\nargs: {:?}",

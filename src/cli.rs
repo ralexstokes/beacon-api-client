@@ -1,5 +1,5 @@
-use crate::{Config, Method, Namespace, Client};
-use url::{Url};
+use crate::{Client, Config, Method, Namespace};
+use url::Url;
 
 pub async fn run_cli(args: &Config) {
     parse_args(&args);
@@ -10,7 +10,7 @@ pub async fn run_cli(args: &Config) {
 pub fn parse_args(args: &Config) {
     let namespace = &args.namespace;
     match check_method_in_ns(&args.method, &namespace) {
-        true => {},
+        true => {}
         false => panic!("method not in given namespace"),
     }
 }
@@ -69,11 +69,11 @@ pub fn check_method_in_ns(method: &Method, namespace: &Namespace) -> bool {
             Method::Syncing => return true,
             Method::Health => return true,
             _ => return false,
-        }
+        },
     }
 }
 
-pub async fn call_api(args: &Config)->String{
+pub async fn call_api(args: &Config) -> String {
     //set up client
     let s = &args.endpoint;
     let url: Url = Url::parse(&s).unwrap();
