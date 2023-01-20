@@ -16,10 +16,9 @@ pub fn parse_args(args: &Config) {
 }
 
 pub fn check_method_in_ns(method: &Method, namespace: &Namespace) -> bool {
-    let res: bool;
-    match namespace {
+    let res: bool = match namespace {
         Namespace::Beacon => {
-            res = matches!(
+            matches!(
                 method,
                 Method::Genesis |
                     Method::Root |
@@ -49,12 +48,12 @@ pub fn check_method_in_ns(method: &Method, namespace: &Namespace) -> bool {
             )
         }
         Namespace::Config => {
-            res = matches!(method, Method::ForkSchedule | Method::Spec | Method::DepositContract)
+            matches!(method, Method::ForkSchedule | Method::Spec | Method::DepositContract)
         }
-        Namespace::Debug => res = matches!(method, Method::State | Method::Head),
-        Namespace::Events => res = matches!(method, Method::Events),
+        Namespace::Debug => matches!(method, Method::State | Method::Head),
+        Namespace::Events => matches!(method, Method::Events),
         Namespace::Node => {
-            res = matches!(
+            matches!(
                 method,
                 Method::Identity |
                     Method::Peer |
@@ -65,7 +64,7 @@ pub fn check_method_in_ns(method: &Method, namespace: &Namespace) -> bool {
                     Method::Health
             )
         }
-    }
+    };
     res
 }
 
