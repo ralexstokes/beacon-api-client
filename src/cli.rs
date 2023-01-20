@@ -16,61 +16,57 @@ pub fn parse_args(args: &Config) {
 }
 
 pub fn check_method_in_ns(method: &Method, namespace: &Namespace) -> bool {
+    let res: bool;
     match namespace {
-        Namespace::Beacon => match method {
-            Method::Genesis => true,
-            Method::Root => true,
-            Method::Fork => true,
-            Method::FinalityCheckpoints => true,
-            Method::Validator => true,
-            Method::Validators => true,
-            Method::ValidatorBalances => true,
-            Method::Committees => true,
-            Method::SyncCommittees => true,
-            Method::Header => true,
-            Method::Headers => true,
-            Method::Block => true,
-            Method::Blocks => true,
-            Method::BlindedBlocks => true,
-            Method::BlockRoot => true,
-            Method::BlockAttestations => true,
-            Method::PoolAttestations => true,
-            Method::PostAttestations => true,
-            Method::AttesterSlashing => true,
-            Method::PostAttesterSlashing => true,
-            Method::ProposerSlashing => true,
-            Method::PostProposerSlashing => true,
-            Method::PostSyncCommittees => true,
-            Method::VoluntaryExits => true,
-            Method::PostVoluntaryExits => true,
-            _ => false,
-        },
-        Namespace::Config => match method {
-            Method::ForkSchedule => true,
-            Method::Spec => true,
-            Method::DepositContract => true,
-            _ => false,
-        },
-        Namespace::Debug => match method {
-            Method::State => true,
-            Method::Head => true,
-            _ => false,
-        },
-        Namespace::Events => match method {
-            Method::Events => true,
-            _ => false,
-        },
-        Namespace::Node => match method {
-            Method::Identity => true,
-            Method::Peer => true,
-            Method::Peers => true,
-            Method::PeerCount => true,
-            Method::Version => true,
-            Method::Syncing => true,
-            Method::Health => true,
-            _ => false,
-        },
+        Namespace::Beacon => {
+            res = matches!(
+                method,
+                Method::Genesis |
+                    Method::Root |
+                    Method::Fork |
+                    Method::FinalityCheckpoints |
+                    Method::Validator |
+                    Method::Validators |
+                    Method::ValidatorBalances |
+                    Method::Committees |
+                    Method::SyncCommittees |
+                    Method::Header |
+                    Method::Headers |
+                    Method::Block |
+                    Method::Blocks |
+                    Method::BlindedBlocks |
+                    Method::BlockRoot |
+                    Method::BlockAttestations |
+                    Method::PoolAttestations |
+                    Method::PostAttestations |
+                    Method::AttesterSlashing |
+                    Method::PostAttesterSlashing |
+                    Method::ProposerSlashing |
+                    Method::PostProposerSlashing |
+                    Method::PostSyncCommittees |
+                    Method::VoluntaryExits |
+                    Method::PostVoluntaryExits
+            )
+        }
+        Namespace::Config => {
+            res = matches!(method, Method::ForkSchedule | Method::Spec | Method::DepositContract)
+        }
+        Namespace::Debug => res = matches!(method, Method::State | Method::Head),
+        Namespace::Events => res = matches!(method, Method::Events),
+        Namespace::Node => {
+            res = matches!(
+                method,
+                Method::Identity |
+                    Method::Peer |
+                    Method::Peers |
+                    Method::PeerCount |
+                    Method::Version |
+                    Method::Syncing |
+                    Method::Health
+            )
+        }
     }
+    res
 }
 
 pub async fn call_api(args: &Config) -> String {
