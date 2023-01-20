@@ -15,5 +15,5 @@ async fn main() {
         config.method,
         config.args.unwrap_or("no args provided".to_string())
     );
-    println!("");
+    println!();
 }
