@@ -2,14 +2,14 @@ use crate::{Client, Config, Method, Namespace};
 use url::Url;
 
 pub async fn run_cli(args: &Config) {
-    parse_args(&args);
-    let out = call_api(&args).await;
-    println!("{:?}", out);
+    parse_args(args);
+    let out = call_api(args).await;
+    println!("{out:?}");
 }
 
 pub fn parse_args(args: &Config) {
     let namespace = &args.namespace;
-    match check_method_in_ns(&args.method, &namespace) {
+    match check_method_in_ns(&args.method, namespace) {
         true => {}
         false => panic!("method not in given namespace"),
     }
@@ -18,57 +18,57 @@ pub fn parse_args(args: &Config) {
 pub fn check_method_in_ns(method: &Method, namespace: &Namespace) -> bool {
     match namespace {
         Namespace::Beacon => match method {
-            Method::Genesis => return true,
-            Method::Root => return true,
-            Method::Fork => return true,
-            Method::FinalityCheckpoints => return true,
-            Method::Validator => return true,
-            Method::Validators => return true,
-            Method::ValidatorBalances => return true,
-            Method::Committees => return true,
-            Method::SyncCommittees => return true,
-            Method::Header => return true,
-            Method::Headers => return true,
-            Method::Block => return true,
-            Method::Blocks => return true,
-            Method::BlindedBlocks => return true,
-            Method::BlockRoot => return true,
-            Method::BlockAttestations => return true,
-            Method::PoolAttestations => return true,
-            Method::PostAttestations => return true,
-            Method::AttesterSlashing => return true,
-            Method::PostAttesterSlashing => return true,
-            Method::ProposerSlashing => return true,
-            Method::PostProposerSlashing => return true,
-            Method::PostSyncCommittees => return true,
-            Method::VoluntaryExits => return true,
-            Method::PostVoluntaryExits => return true,
-            _ => return false,
+            Method::Genesis =>  true,
+            Method::Root =>  true,
+            Method::Fork =>  true,
+            Method::FinalityCheckpoints =>  true,
+            Method::Validator =>  true,
+            Method::Validators =>  true,
+            Method::ValidatorBalances =>  true,
+            Method::Committees =>  true,
+            Method::SyncCommittees =>  true,
+            Method::Header =>  true,
+            Method::Headers =>  true,
+            Method::Block =>  true,
+            Method::Blocks =>  true,
+            Method::BlindedBlocks =>  true,
+            Method::BlockRoot =>  true,
+            Method::BlockAttestations =>  true,
+            Method::PoolAttestations =>  true,
+            Method::PostAttestations =>  true,
+            Method::AttesterSlashing =>  true,
+            Method::PostAttesterSlashing =>  true,
+            Method::ProposerSlashing =>  true,
+            Method::PostProposerSlashing =>  true,
+            Method::PostSyncCommittees =>  true,
+            Method::VoluntaryExits =>  true,
+            Method::PostVoluntaryExits =>  true,
+            _ =>  false,
         },
         Namespace::Config => match method {
-            Method::ForkSchedule => return true,
-            Method::Spec => return true,
-            Method::DepositContract => return true,
-            _ => return false,
+            Method::ForkSchedule =>  true,
+            Method::Spec =>  true,
+            Method::DepositContract =>  true,
+            _ =>  false,
         },
         Namespace::Debug => match method {
-            Method::State => return true,
-            Method::Head => return true,
-            _ => return false,
+            Method::State =>  true,
+            Method::Head =>  true,
+            _ =>  false,
         },
         Namespace::Events => match method {
-            Method::Events => return true,
-            _ => return false,
+            Method::Events =>  true,
+            _ =>  false,
         },
         Namespace::Node => match method {
-            Method::Identity => return true,
-            Method::Peer => return true,
-            Method::Peers => return true,
-            Method::PeerCount => return true,
-            Method::Version => return true,
-            Method::Syncing => return true,
-            Method::Health => return true,
-            _ => return false,
+            Method::Identity =>  true,
+            Method::Peer =>  true,
+            Method::Peers =>  true,
+            Method::PeerCount =>  true,
+            Method::Version =>  true,
+            Method::Syncing =>  true,
+            Method::Health =>  true,
+            _ =>  false,
         },
     }
 }
@@ -76,12 +76,12 @@ pub fn check_method_in_ns(method: &Method, namespace: &Namespace) -> bool {
 pub async fn call_api(args: &Config) -> String {
     //set up client
     let s = &args.endpoint;
-    let url: Url = Url::parse(&s).unwrap();
+    let url: Url = Url::parse(s).unwrap();
     let client = Client::new(url);
     let method = &args.method;
     match method {
         // Match on the provided method
-        Method::Version => return client.get_node_version().await.unwrap(),
+        Method::Version =>  client.get_node_version().await.unwrap(),
         _ => panic!("problem in api call"),
     }
 }
