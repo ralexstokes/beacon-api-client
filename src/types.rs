@@ -1,5 +1,5 @@
 use crate::error::ApiError;
-use clap::Parser;
+use clap::{Parser, Args, Subcommand};
 use ethereum_consensus::{
     networking::{Enr, MetaData, Multiaddr, PeerId},
     phase0::mainnet::{Checkpoint, SignedBeaconBlockHeader, Validator},
@@ -11,20 +11,117 @@ use ethereum_consensus::{
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::{collections::HashMap, fmt};
 
-#[derive(Parser, Default, Debug)]
+// #[derive(Parser, Default, Debug)]
+// #[clap(version, about = "Beacon API client")]
+// pub struct Config {
+//     #[clap(short, long)]
+//     pub node_url: String,
+//     #[clap(short, long)]
+//     pub method: String,
+//     #[clap(short, long)]
+//     pub state_id: Option<String>,
+//     #[clap(short, long)]
+//     pub id: Option<String>,
+//     #[clap(short, long)]
+//     pub validator_status: Option<String>,
+// }
+
+#[derive(Debug, Parser)]
 #[clap(version, about = "Beacon API client")]
-pub struct CliArgs {
-    #[clap(short, long)]
-    pub node_url: String,
+pub struct Config {
     #[clap(short, long)]
     pub endpoint: String,
     #[clap(short, long)]
-    pub state_id: Option<String>,
+    pub namespace: Namespace,
     #[clap(short, long)]
-    pub id: Option<String>,
+    pub method: Method,
     #[clap(short, long)]
-    pub validator_status: Option<String>,
+    pub args: Option<String>,
 }
+
+
+#[derive(Debug, Clone, clap::ValueEnum)]
+pub enum Namespace {
+    Beacon,
+    Config,
+    Debug,
+    Events,
+    Node,
+}
+
+impl fmt::Display for Namespace {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let printable = match *self {
+            Namespace::Beacon => "beacon",
+            Namespace::Config => "config",
+            Namespace::Debug => "debug",
+            Namespace::Events => "events",
+            Namespace::Node => "Node",
+        };
+        write!(f, "{printable}")
+    }
+}
+
+
+#[derive(Debug, Clone, clap::ValueEnum)]
+pub enum Method {
+    //Beacon ns
+    Genesis,
+    Root,
+    Fork,
+    FinalityCheckpoints,
+    Validator,
+    Validators,
+    ValidatorBalances,
+    Committees,
+    SyncCommittees,
+    Headers,
+    //Config ns
+    ForkSchedule,
+    Spec,
+    DepositContract,
+    //Debug ns
+    State,
+    Head,
+    //Events ns
+    Events,
+    //Node ns
+    Identity,
+    Peer,
+    Peers,
+}
+
+impl fmt::Display for Method {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let printable = match *self {
+            Method::Genesis=>"genesis",
+            Method::Root=>"root",
+            Method::Fork=>"fork",
+            Method::FinalityCheckpoints=>"finality_checkpoints",
+            Method::Validator=>"validator",
+            Method::Validators=>"validators",
+            Method::ValidatorBalances=>"validator_balances",
+            Method::Committees=>"committees",
+            Method::SyncCommittees=>"sync_committees",
+            Method::Headers=>"headers",
+            Method::ForkSchedule=>"fork_schedule",
+            Method::Spec=>"spec",
+            Method::DepositContract=>"deposit_contract",
+            Method::State=>"state",
+            Method::Head=>"head",
+            Method::Events=>"events",
+            Method::Identity=>"identity",
+            Method::Peer=>"peer",
+            Method::Peers=>"peers",
+        };
+        write!(f, "{printable}")
+    }
+}
+
+
+
+
+
 
 #[derive(Serialize, Deserialize)]
 pub struct VersionData {
