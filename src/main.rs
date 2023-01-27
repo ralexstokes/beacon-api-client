@@ -9,11 +9,8 @@ async fn main() {
 
     println!("\nCLI args:");
     println!(
-        "endpoint: {:?}\nnamespace: {:?}\nmethod: {:?}\nargs: {:?}",
-        config.endpoint,
-        config.namespace,
-        config.method,
-        config.args.unwrap_or("no args provided".to_string())
+        "endpoint: {:?}\nnamespace: {:?}\nmethod: {:?}",
+        config.endpoint, config.namespace, config.method
     );
     println!();
 }

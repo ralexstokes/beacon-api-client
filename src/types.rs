@@ -20,8 +20,6 @@ pub struct Config {
     pub namespace: Namespace,
     #[clap(short, long)]
     pub method: Method,
-    #[clap(short, long)]
-    pub args: Option<String>,
 }
 
 #[derive(Debug, Clone, clap::ValueEnum)]
@@ -31,6 +29,7 @@ pub enum Namespace {
     Debug,
     Events,
     Node,
+    Validator,
 }
 
 impl fmt::Display for Namespace {
@@ -40,13 +39,14 @@ impl fmt::Display for Namespace {
             Namespace::Config => "config",
             Namespace::Debug => "debug",
             Namespace::Events => "events",
-            Namespace::Node => "Node",
+            Namespace::Node => "node",
+            Namespace::Validator => "validator",
         };
         write!(f, "{printable}")
     }
 }
 
-#[derive(Debug, Clone, clap::ValueEnum)]
+#[derive(Debug, Clone, clap::ValueEnum, PartialEq)]
 pub enum Method {
     //Beacon ns
     Genesis,
@@ -61,8 +61,8 @@ pub enum Method {
     Header,
     Headers,
     Block,
-    Blocks,
-    BlindedBlocks,
+    PostBlock,
+    PostBlindedBlock,
     BlockRoot,
     BlockAttestations,
     PoolAttestations,
@@ -91,6 +91,20 @@ pub enum Method {
     Version,
     Syncing,
     Health,
+    //Validator ns
+    GetAttesterDuties,
+    GetProposerDuties,
+    GetSyncCommitteeDuties,
+    GetBlockproposal,
+    GetBlindedBlockProposal,
+    GetAttestationData,
+    GetAttestationAggregate,
+    PostAggregatesWithProofs,
+    SubscribeSubnetsForSyncCommittees,
+    GetSyncCommitteeContribution,
+    PostSyncCommitteeContributionWithProofs,
+    PrepareProposers,
+    RegisterValidatorsWithBuilders,
 }
 
 impl fmt::Display for Method {
@@ -108,8 +122,8 @@ impl fmt::Display for Method {
             Method::Header => "header",
             Method::Headers => "headers",
             Method::Block => "block",
-            Method::Blocks => "blocks",
-            Method::BlindedBlocks => "blinded_blocks",
+            Method::PostBlock => "post_block",
+            Method::PostBlindedBlock => "blinded_blocks",
             Method::BlockRoot => "block_root",
             Method::BlockAttestations => "block_attestations",
             Method::PoolAttestations => "pool_attestations",
@@ -134,6 +148,21 @@ impl fmt::Display for Method {
             Method::Version => "version",
             Method::Syncing => "syncing",
             Method::Health => "health",
+            Method::GetAttesterDuties => "get_attester_duties",
+            Method::GetProposerDuties => "get_proposer_duties",
+            Method::GetSyncCommitteeDuties => "get_sync_committee_duties",
+            Method::GetBlockproposal => "get_block_proposal",
+            Method::GetBlindedBlockProposal => "get_blinded_block_proposal",
+            Method::GetAttestationData => "get_attestation_data",
+            Method::GetAttestationAggregate => "get_attestation_aggregate",
+            Method::PostAggregatesWithProofs => "post_aggregates_with_proofs",
+            Method::SubscribeSubnetsForSyncCommittees => "subscribe_subnets_for_sync_committees",
+            Method::GetSyncCommitteeContribution => "get_sync_committee_contribution",
+            Method::PostSyncCommitteeContributionWithProofs => {
+                "post_sync_committee_contribution_with_proofs"
+            }
+            Method::PrepareProposers => "prepare_proposers",
+            Method::RegisterValidatorsWithBuilders => "register_validators_with_builders",
         };
         write!(f, "{printable}")
     }
@@ -168,7 +197,7 @@ pub struct GenesisDetails {
     pub genesis_fork_version: Version,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum StateId {
     Head,
     Genesis,
