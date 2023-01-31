@@ -1,5 +1,5 @@
-use crate::error::ApiError;
-use clap::Parser;
+use crate::{api_client::Client, error::ApiError};
+use clap::{Args, Parser, Subcommand};
 use ethereum_consensus::{
     networking::{Enr, MetaData, Multiaddr, PeerId},
     phase0::mainnet::{Checkpoint, SignedBeaconBlockHeader, Validator},
@@ -9,163 +9,234 @@ use ethereum_consensus::{
     },
 };
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use std::{collections::HashMap, fmt};
+use std::{collections::HashMap, fmt, str::FromStr};
+use url::Url;
 
 #[derive(Debug, Parser)]
 #[clap(version, about = "Beacon API client")]
-pub struct Config {
+pub struct CliConfig {
     #[clap(short, long)]
     pub endpoint: String,
-    #[clap(short, long)]
-    pub namespace: Namespace,
-    #[clap(short, long)]
-    pub method: Method,
+    #[clap(subcommand)]
+    pub command: Namespace,
 }
 
-#[derive(Debug, Clone, clap::ValueEnum)]
+#[derive(Debug, Clone, Subcommand)]
+#[clap(author, version, about)]
 pub enum Namespace {
-    Beacon,
-    Config,
-    Debug,
-    Events,
-    Node,
-    Validator,
+    #[clap(subcommand)]
+    Beacon(BeaconMethod),
+    #[clap(subcommand)]
+    Config(ConfigMethod),
+    #[clap(subcommand)]
+    Debug(DebugMethod),
+    #[clap(subcommand)]
+    Events(EventsMethod),
+    // Node(NodeMethod),
+    // Validator(ValidatorMethod),
 }
 
 impl fmt::Display for Namespace {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let printable = match *self {
-            Namespace::Beacon => "beacon",
-            Namespace::Config => "config",
-            Namespace::Debug => "debug",
-            Namespace::Events => "events",
-            Namespace::Node => "node",
-            Namespace::Validator => "validator",
+            Namespace::Beacon(_) => "beacon",
+            Namespace::Config(_) => "config",
+            Namespace::Debug(_) => "debug",
+            Namespace::Events(_) => "events",
+            // Namespace::Node(_) => "node",
+            // Namespace::Validator(_) => "validator",
         };
         write!(f, "{printable}")
     }
 }
 
-#[derive(Debug, Clone, clap::ValueEnum, PartialEq)]
-pub enum Method {
+#[derive(Debug, Clone, Subcommand)]
+pub enum BeaconMethod {
     //Beacon ns
     Genesis,
-    Root,
-    Fork,
-    FinalityCheckpoints,
-    Validator,
-    Validators,
-    ValidatorBalances,
-    Committees,
-    SyncCommittees,
-    Header,
-    Headers,
-    Block,
-    PostBlock,
-    PostBlindedBlock,
-    BlockRoot,
-    BlockAttestations,
-    PoolAttestations,
-    PostAttestations,
-    AttesterSlashing,
-    PostAttesterSlashing,
-    ProposerSlashing,
-    PostProposerSlashing,
-    PostSyncCommittees,
-    VoluntaryExits,
-    PostVoluntaryExits,
-    //Config ns
+    Root(StateIdArg),
+    Fork(StateIdArg),
+    FinalityCheckpoints(StateIdArg),
+    Validator(ValidatorArg),
+    Validators(ValidatorsArg),
+    ValidatorBalances(ValidatorBalancesArg),
+    Committees(CommitteesArg),
+    SyncCommittees(SyncCommitteesArg),
+    // HeaderAtHead,
+    // HeaderForSlot,
+    // HeaderForParentRoot,
+    // HeaderForBockId,
+    // Block,
+    // PostBlock,
+    // PostBlindedBlock,
+    // BlockRoot,
+    // BlockAttestations,
+    // PoolAttestations,
+    // PostAttestations,
+    // AttesterSlashing,
+    // PostAttesterSlashing,
+    // ProposerSlashing,
+    // PostProposerSlashing,
+    // PostSyncCommittees,
+    // VoluntaryExits,
+    // PostVoluntaryExits,
+}
+#[derive(Debug, Clone, Subcommand)]
+pub enum ConfigMethod {
     ForkSchedule,
     Spec,
     DepositContract,
+}
+#[derive(Debug, Clone, Subcommand)]
+pub enum DebugMethod {
     //Debug ns
-    State,
+    State(StateIdArg),
     Head,
+}
+#[derive(Debug, Clone, Subcommand)]
+pub enum EventsMethod {
     //Events ns
     Events,
-    //Node ns
-    Identity,
-    Peer,
-    Peers,
-    PeerCount,
-    Version,
-    Syncing,
-    Health,
-    //Validator ns
-    GetAttesterDuties,
-    GetProposerDuties,
-    GetSyncCommitteeDuties,
-    GetBlockproposal,
-    GetBlindedBlockProposal,
-    GetAttestationData,
-    GetAttestationAggregate,
-    PostAggregatesWithProofs,
-    SubscribeSubnetsForSyncCommittees,
-    GetSyncCommitteeContribution,
-    PostSyncCommitteeContributionWithProofs,
-    PrepareProposers,
-    RegisterValidatorsWithBuilders,
+}
+// #[derive(Debug, Clone, Subcommand)]
+// pub enum NodeMethod {
+//     //Node ns
+//     Identity,
+//     Peer,
+//     Peers,
+//     PeerCount,
+//     Version,
+//     Syncing,
+//     Health,
+// }
+// #[derive(Debug, Clone, Subcommand)]
+// pub enum ValidatorMethod {
+//     //Validator ns
+//     GetAttesterDuties,
+//     GetProposerDuties,
+//     GetSyncCommitteeDuties,
+//     GetBlockproposal,
+//     GetBlindedBlockProposal,
+//     GetAttestationData,
+//     GetAttestationAggregate,
+//     PostAggregatesWithProofs,
+//     SubscribeSubnetsForSyncCommittees,
+//     GetSyncCommitteeContribution,
+//     PostSyncCommitteeContributionWithProofs,
+//     PrepareProposers,
+//     RegisterValidatorsWithBuilders,
+// }
+
+// impl fmt::Display for Method {
+//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+//         let printable = match *self {
+//             Method::Genesis => "genesis",
+//             Method::Root => "root",
+//             Method::Fork => "fork",
+//             Method::FinalityCheckpoints => "finality_checkpoints",
+//             Method::Validator => "validator",
+//             Method::Validators => "validators",
+//             Method::ValidatorBalances => "validator_balances",
+//             Method::Committees => "committees",
+//             Method::SyncCommittees => "sync_committees",
+//             Method::Header => "header",
+//             Method::Headers => "headers",
+//             Method::Block => "block",
+//             Method::PostBlock => "post_block",
+//             Method::PostBlindedBlock => "blinded_blocks",
+//             Method::BlockRoot => "block_root",
+//             Method::BlockAttestations => "block_attestations",
+//             Method::PoolAttestations => "pool_attestations",
+//             Method::PostAttestations => "post_attestations",
+//             Method::AttesterSlashing => "attester_slashing",
+//             Method::PostAttesterSlashing => "post_attester_slashing",
+//             Method::ProposerSlashing => "proposer_slashing",
+//             Method::PostProposerSlashing => "post_proposer_slashing",
+//             Method::PostSyncCommittees => "post_sync_committees",
+//             Method::VoluntaryExits => "voluntary_exits",
+//             Method::PostVoluntaryExits => "post_voluntary_exits",
+//             Method::ForkSchedule => "fork_schedule",
+//             Method::Spec => "spec",
+//             Method::DepositContract => "deposit_contract",
+//             Method::State => "state",
+//             Method::Head => "head",
+//             Method::Events => "events",
+//             Method::Identity => "identity",
+//             Method::Peer => "peer",
+//             Method::Peers => "peers",
+//             Method::PeerCount => "peer-count",
+//             Method::Version => "version",
+//             Method::Syncing => "syncing",
+//             Method::Health => "health",
+//             Method::GetAttesterDuties => "get_attester_duties",
+//             Method::GetProposerDuties => "get_proposer_duties",
+//             Method::GetSyncCommitteeDuties => "get_sync_committee_duties",
+//             Method::GetBlockproposal => "get_block_proposal",
+//             Method::GetBlindedBlockProposal => "get_blinded_block_proposal",
+//             Method::GetAttestationData => "get_attestation_data",
+//             Method::GetAttestationAggregate => "get_attestation_aggregate",
+//             Method::PostAggregatesWithProofs => "post_aggregates_with_proofs",
+//             Method::SubscribeSubnetsForSyncCommittees => "subscribe_subnets_for_sync_committees",
+//             Method::GetSyncCommitteeContribution => "get_sync_committee_contribution",
+//             Method::PostSyncCommitteeContributionWithProofs => {
+//                 "post_sync_committee_contribution_with_proofs"
+//             }
+//             Method::PrepareProposers => "prepare_proposers",
+//             Method::RegisterValidatorsWithBuilders => "register_validators_with_builders",
+//         };
+//         write!(f, "{printable}")
+//     }
+// }
+
+#[derive(Debug, Clone, Args)]
+pub struct StateIdArg {
+    pub state_id: StateId,
 }
 
-impl fmt::Display for Method {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let printable = match *self {
-            Method::Genesis => "genesis",
-            Method::Root => "root",
-            Method::Fork => "fork",
-            Method::FinalityCheckpoints => "finality_checkpoints",
-            Method::Validator => "validator",
-            Method::Validators => "validators",
-            Method::ValidatorBalances => "validator_balances",
-            Method::Committees => "committees",
-            Method::SyncCommittees => "sync_committees",
-            Method::Header => "header",
-            Method::Headers => "headers",
-            Method::Block => "block",
-            Method::PostBlock => "post_block",
-            Method::PostBlindedBlock => "blinded_blocks",
-            Method::BlockRoot => "block_root",
-            Method::BlockAttestations => "block_attestations",
-            Method::PoolAttestations => "pool_attestations",
-            Method::PostAttestations => "post_attestations",
-            Method::AttesterSlashing => "attester_slashing",
-            Method::PostAttesterSlashing => "post_attester_slashing",
-            Method::ProposerSlashing => "proposer_slashing",
-            Method::PostProposerSlashing => "post_proposer_slashing",
-            Method::PostSyncCommittees => "post_sync_committees",
-            Method::VoluntaryExits => "voluntary_exits",
-            Method::PostVoluntaryExits => "post_voluntary_exits",
-            Method::ForkSchedule => "fork_schedule",
-            Method::Spec => "spec",
-            Method::DepositContract => "deposit_contract",
-            Method::State => "state",
-            Method::Head => "head",
-            Method::Events => "events",
-            Method::Identity => "identity",
-            Method::Peer => "peer",
-            Method::Peers => "peers",
-            Method::PeerCount => "peer-count",
-            Method::Version => "version",
-            Method::Syncing => "syncing",
-            Method::Health => "health",
-            Method::GetAttesterDuties => "get_attester_duties",
-            Method::GetProposerDuties => "get_proposer_duties",
-            Method::GetSyncCommitteeDuties => "get_sync_committee_duties",
-            Method::GetBlockproposal => "get_block_proposal",
-            Method::GetBlindedBlockProposal => "get_blinded_block_proposal",
-            Method::GetAttestationData => "get_attestation_data",
-            Method::GetAttestationAggregate => "get_attestation_aggregate",
-            Method::PostAggregatesWithProofs => "post_aggregates_with_proofs",
-            Method::SubscribeSubnetsForSyncCommittees => "subscribe_subnets_for_sync_committees",
-            Method::GetSyncCommitteeContribution => "get_sync_committee_contribution",
-            Method::PostSyncCommitteeContributionWithProofs => {
-                "post_sync_committee_contribution_with_proofs"
-            }
-            Method::PrepareProposers => "prepare_proposers",
-            Method::RegisterValidatorsWithBuilders => "register_validators_with_builders",
-        };
-        write!(f, "{printable}")
+impl StateIdArg {
+    pub async fn execute(&self, config: &CliConfig) {
+        let id = &self.state_id;
+        let url: Url = Url::parse(&config.endpoint).unwrap();
+        let client = Client::new(url);
+        let out = client.get_state_root(id.to_owned()).await.unwrap();
+        println!("{:?}", out);
     }
+}
+
+#[derive(Debug, Clone, Args)]
+pub struct ValidatorArg {
+    pub state_id: String,
+    pub validator_id: String,
+}
+
+#[derive(Debug, Clone, Args)]
+pub struct ValidatorsArg {
+    pub state_id: String,
+    pub validator_ids: String,
+    pub filters: String,
+}
+
+#[derive(Debug, Clone, Args)]
+pub struct ValidatorBalancesArg {
+    pub state_id: String,
+    pub filters: String,
+}
+
+#[derive(Debug, Clone, Args)]
+pub struct CommitteesArg {
+    pub state_id: String,
+    pub filters: String,
+}
+
+#[derive(Debug, Clone, Args)]
+pub struct SyncCommitteesArg {
+    pub state_id: String,
+    pub epoch: String,
+}
+
+#[derive(Debug, Clone, Args)]
+pub struct HeaderArg {
+    pub slot: String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -218,6 +289,20 @@ impl fmt::Display for StateId {
             StateId::Root(root) => return write!(f, "{root}"),
         };
         write!(f, "{printable}")
+    }
+}
+
+impl FromStr for StateId {
+    type Err = &'static str;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "finalized" => Ok(StateId::Finalized),
+            "justified" => Ok(StateId::Justified),
+            "head" => Ok(StateId::Head),
+            "genesis" => Ok(StateId::Genesis),
+            //TODO: work out how to parse slot and root variants
+            _ => Err("Unknown StateId Type"),
+        }
     }
 }
 
