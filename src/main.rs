@@ -1,20 +1,12 @@
-use beacon_api_client::{
-    BeaconMethod, CliConfig, ConfigMethod, DebugMethod, EventsMethod,
-    Namespace::{Beacon, Config, Debug, Events},
-    StateIdArg,
-};
+use beacon_api_client::{run_cli, CliConfig, Client};
 use clap::Parser;
+use url::Url;
 
 #[tokio::main]
 async fn main() {
     let args = CliConfig::parse();
+    let url: Url = Url::parse(&args.endpoint).unwrap();
+    let client = Client::new(url);
 
-    println!("{:?}", args);
-    match args.command {
-        Beacon(BeaconMethod::Root(ref state_id)) => state_id.execute(&args).await,
-        Config(ConfigMethod::ForkSchedule) => println!("not ready yet"),
-        Debug(DebugMethod::State(state_id)) => println!("not ready yet"),
-        Events(EventsMethod::Events) => println!("not ready yet"),
-        _ => println!("coming later"),
-    }
+    run_cli(client, args).await;
 }
