@@ -1,4 +1,4 @@
-use crate::{api_client::Client, error::ApiError};
+use crate::{api_client::Client, error::ApiError, Error};
 use ethereum_consensus::{
     networking::{Enr, MetaData, Multiaddr, PeerId},
     phase0::mainnet::{Checkpoint, SignedBeaconBlockHeader, Validator},
@@ -72,8 +72,17 @@ impl FromStr for StateId {
             "justified" => Ok(StateId::Justified),
             "head" => Ok(StateId::Head),
             "genesis" => Ok(StateId::Genesis),
-            //TODO: work out how to parse slot and root variants
-            _ => Err("Unknown StateId Type"),
+            _ => {
+                if s.parse::<u64>().is_ok() {
+                    return Ok(StateId::Slot(s.parse::<u64>().unwrap()))
+                } else {
+                    if s.as_bytes().len() == 32 {
+                        return Ok(StateId::Root(s.as_bytes().try_into().unwrap()))
+                    } else {
+                        return Err("invalid input to state_id")
+                    }
+                }
+            }
         }
     }
 }
