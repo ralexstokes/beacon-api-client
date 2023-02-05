@@ -193,6 +193,17 @@ impl From<BlsPublicKey> for PublicKeyOrIndex {
     }
 }
 
+impl From<String> for PublicKeyOrIndex {
+    fn from(s: String) -> Self {
+        match try_bytes_from_hex_str(&s) {
+            Ok(..) => {
+                Self::PublicKey(try_bytes_from_hex_str(&s).unwrap().as_slice().try_into().unwrap())
+            }
+            _ => Self::Index(s.parse::<usize>().unwrap()),
+        }
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ValidatorSummary {
     #[serde(with = "crate::serde::as_string")]
