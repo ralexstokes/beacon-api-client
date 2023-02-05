@@ -6,8 +6,9 @@ use ethereum_consensus::{
         BlsPublicKey, ChainId, CommitteeIndex, Coordinate, Epoch, ExecutionAddress, Gwei, Root,
         Slot, ValidatorIndex, Version,
     },
-    serde::as_hex,
+    serde::try_bytes_from_hex_str,
 };
+use hex::FromHex;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::{collections::HashMap, fmt, str::FromStr};
 
@@ -72,17 +73,15 @@ impl FromStr for StateId {
             "justified" => Ok(StateId::Justified),
             "head" => Ok(StateId::Head),
             "genesis" => Ok(StateId::Genesis),
-            _ => {
-                if s.parse::<u64>().is_ok() {
-                    return Ok(StateId::Slot(s.parse::<u64>().unwrap()))
-                } else {
-                    if s.as_bytes().len() == 32 {
-                        return Ok(StateId::Root(s.as_bytes().try_into().unwrap()))
-                    } else {
-                        return Err("invalid input to state_id")
-                    }
-                }
-            }
+            _ => match s.parse::<u64>() {
+                Ok(..) => Ok(StateId::Slot(s.parse::<u64>().unwrap())),
+                _ => match try_bytes_from_hex_str(s) {
+                    Ok(..) => Ok(StateId::Root(
+                        try_bytes_from_hex_str(s).unwrap().as_slice().try_into().unwrap(),
+                    )),
+                    _ => Err("invalid input to state_id"),
+                },
+            },
         }
     }
 }
