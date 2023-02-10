@@ -1,4 +1,4 @@
-use crate::{api_client::Client, error::ApiError, Error};
+use crate::error::ApiError;
 use ethereum_consensus::{
     networking::{Enr, MetaData, Multiaddr, PeerId},
     phase0::mainnet::{Checkpoint, SignedBeaconBlockHeader, Validator},
@@ -8,7 +8,6 @@ use ethereum_consensus::{
     },
     serde::try_bytes_from_hex_str,
 };
-use hex::FromHex;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::{collections::HashMap, fmt, str::FromStr};
 
@@ -73,15 +72,17 @@ impl FromStr for StateId {
             "justified" => Ok(StateId::Justified),
             "head" => Ok(StateId::Head),
             "genesis" => Ok(StateId::Genesis),
-            _ => match s.parse::<u64>() {
-                Ok(..) => Ok(StateId::Slot(s.parse::<u64>().unwrap())),
-                _ => match try_bytes_from_hex_str(s) {
-                    Ok(..) => Ok(StateId::Root(
+            _ => {
+                if s.parse::<u64>().is_ok() {
+                    return Ok(StateId::Slot(s.parse::<u64>().unwrap()))
+                } else if try_bytes_from_hex_str(s).is_ok() {
+                    return Ok(StateId::Root(
                         try_bytes_from_hex_str(s).unwrap().as_slice().try_into().unwrap(),
-                    )),
-                    _ => Err("invalid input to state_id"),
-                },
-            },
+                    ))
+                } else {
+                    return Err("invalid input to state_id")
+                }
+            }
         }
     }
 }

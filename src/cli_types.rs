@@ -3,7 +3,7 @@ use crate::{
     types::{PublicKeyOrIndex, StateId},
 };
 use clap::{Args, Parser, Subcommand};
-use std::{fmt, str::FromStr};
+use std::fmt;
 
 #[derive(Debug, Parser)]
 #[clap(version, about = "Beacon API client")]
@@ -93,6 +93,7 @@ pub enum EventsMethod {
     Events,
 }
 
+// arguments for each Namespace::Method subcommand
 #[derive(Debug, Clone, Args)]
 pub struct GenesisArg {
     genesis: Option<String>,
