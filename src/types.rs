@@ -166,6 +166,28 @@ impl fmt::Display for ValidatorStatus {
     }
 }
 
+impl FromStr for ValidatorStatus {
+    type Err = &'static str;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "pending_initialized" => Ok(ValidatorStatus::PendingInitialized),
+            "pending_queued" => Ok(ValidatorStatus::PendingQueued),
+            "active_ongoing" => Ok(ValidatorStatus::ActiveOngoing),
+            "active_exiting" => Ok(ValidatorStatus::ActiveExiting),
+            "active_slashed" => Ok(ValidatorStatus::ActiveSlashed),
+            "exited_unslashed" => Ok(ValidatorStatus::ExitedUnslashed),
+            "exited_slashed" => Ok(ValidatorStatus::ExitedSlashed),
+            "withdrawal_possible" => Ok(ValidatorStatus::WithdrawalPossible),
+            "withdrawal_done" => Ok(ValidatorStatus::WithdrawalDone),
+            "active" => Ok(ValidatorStatus::Active),
+            "pending" => Ok(ValidatorStatus::Pending),
+            "exited" => Ok(ValidatorStatus::Exited),
+            "withdrawal" => Ok(ValidatorStatus::Withdrawal),
+            _ => Err("invalid input to validator status"),
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum PublicKeyOrIndex {
     PublicKey(BlsPublicKey),
