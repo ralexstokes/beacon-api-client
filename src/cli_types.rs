@@ -1,8 +1,9 @@
 use crate::{
     api_client::Client,
-    types::{PublicKeyOrIndex, StateId},
+    types::{PublicKeyOrIndex, StateId, ValidatorStatus},
 };
 use clap::{Args, Parser, Subcommand};
+use ethereum_consensus::primitives::BlsPublicKey;
 use std::fmt;
 
 #[derive(Debug, Parser)]
@@ -163,9 +164,30 @@ impl ValidatorArg {
 // #[derive(Debug, Clone, Args)]
 // pub struct ValidatorsArg {
 //     pub state_id: StateId,
-//     pub validator_ids: &[String],
-//     pub filters: &[String],
+//     pub validator_ids: ValidatorIdUnion,
+//     // pub filters: String,
 // }
+
+// impl ValidatorsArg {
+//     pub fn to_typed(&self){
+//         let vec = self.validator_ids.split(",");
+//         let ids: Vec<&str> = vec.collect();
+//         let mut ids2: Vec<PublicKeyOrIndex> = vec![];
+//         for i in ids.iter(){
+//             let j: PublicKeyOrIndex = PublicKeyOrIndex::from(i.to_string());
+//             ids2.push(j);
+//         }
+
+//     self.validator_ids = ids2.as_slice();
+//     }
+// }
+
+// pub struct ValidatorsArgTyped<'a> {
+//     pub state_id: StateId,
+//     pub validator_ids: &'a[PublicKeyOrIndex],
+//     // pub filters: &[ValidatorStatus],
+// }
+
 
 #[derive(Debug, Clone, Args)]
 pub struct ValidatorBalancesArg {
