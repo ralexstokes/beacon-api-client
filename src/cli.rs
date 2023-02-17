@@ -14,7 +14,9 @@ pub async fn run_cli(client: Client, args: CliConfig) {
         Beacon(BeaconMethod::Validators(ref validators_args)) => {
             validators_args.execute(&client).await
         }
-        // ValidatorBalances(ValidatorBalancesArg),
+        Beacon(BeaconMethod::ValidatorBalances(ref validator_balances_args)) => {
+            validator_balances_args.execute(&client).await
+        }
         // Committees(CommitteesArg),
         // SyncCommittees(SyncCommitteesArg),
         _ => println!("coming later"),

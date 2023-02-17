@@ -53,7 +53,7 @@ pub enum BeaconMethod {
     FinalityCheckpoints(FinalityCheckpointsArg),
     Validator(ValidatorArg),
     Validators(ValidatorsArg),
-    // ValidatorBalances(ValidatorBalancesArg),
+    ValidatorBalances(ValidatorBalancesArg),
     // Committees(CommitteesArg),
     // SyncCommittees(SyncCommitteesArg),
     // HeaderAtHead,
@@ -182,7 +182,7 @@ impl ValidatorsArg {
                 ids.push(j);
             }
         }
-        // parse filter strings to PublicKeyOrIndex type
+        // parse filter strings to ValidatorStatus type
         if let Some(f) = &self.filters {
             let s = f.split(",");
             let fil: Vec<&str> = s.collect();
@@ -191,6 +191,7 @@ impl ValidatorsArg {
                 filters.push(j.to_owned());
             }
         }
+        // call api method
         let out = client
             .get_validators(state_id.to_owned(), &ids.as_slice(), &filters.as_slice())
             .await
@@ -199,11 +200,31 @@ impl ValidatorsArg {
     }
 }
 
-
 #[derive(Debug, Clone, Args)]
 pub struct ValidatorBalancesArg {
-    pub state_id: String,
-    pub filters: String,
+    pub state_id: StateId,
+    pub filters: Option<String>,
+}
+
+impl ValidatorBalancesArg {
+    pub async fn execute(&self, client: &Client) {
+        let state_id = &self.state_id;
+        let mut filters = vec![];
+        // parse filter strings to PublicKeyOrIndex type
+        if let Some(f) = &self.filters {
+            let vec = f.split(",");
+            let f_vec: Vec<&str> = vec.collect();
+            for i in f_vec.iter() {
+                let j: PublicKeyOrIndex = PublicKeyOrIndex::from(i.to_string());
+                filters.push(j);
+            }
+        }
+        // call api method
+        let out = client.get_balances(state_id.to_owned(), &filters.as_slice()).await.unwrap();
+        for i in out {
+            println!("Index: {:?}, balance: {:?}", i.index, i.balance)
+        }
+    }
 }
 
 #[derive(Debug, Clone, Args)]
