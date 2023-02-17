@@ -11,8 +11,8 @@ pub async fn run_cli(client: Client, args: CliConfig) {
         Beacon(BeaconMethod::Validator(ref validator_args)) => {
             validator_args.execute(&client).await
         }
-        Beacon(BeaconMethod::Validators(ref validator_args)) => {
-            validator_args.execute(&client).await
+        Beacon(BeaconMethod::Validators(ref validators_args)) => {
+            validators_args.execute(&client).await
         }
         // ValidatorBalances(ValidatorBalancesArg),
         // Committees(CommitteesArg),
