@@ -1,6 +1,7 @@
 use crate::{
     api_client::Client,
     types::{PublicKeyOrIndex, StateId, ValidatorStatus},
+    CommitteeFilter,
 };
 use clap::{Args, Parser, Subcommand};
 use ethereum_consensus::primitives::BlsPublicKey;
@@ -54,7 +55,7 @@ pub enum BeaconMethod {
     Validator(ValidatorArg),
     Validators(ValidatorsArg),
     ValidatorBalances(ValidatorBalancesArg),
-    // Committees(CommitteesArg),
+    Committees(CommitteesArg),
     // SyncCommittees(SyncCommitteesArg),
     // HeaderAtHead,
     // HeaderForSlot,
@@ -229,8 +230,44 @@ impl ValidatorBalancesArg {
 
 #[derive(Debug, Clone, Args)]
 pub struct CommitteesArg {
-    pub state_id: String,
-    pub filters: String,
+    pub state_id: StateId,
+    pub filters: Option<String>,
+}
+
+impl CommitteesArg {
+    pub async fn execute(&self, client: &Client) {
+        let state_id = &self.state_id;
+
+        if let Some(f) = &self.filters {
+            let vec = f.split(",");
+            let f_vec: Vec<&str> = vec.collect();
+            let mut filter = CommitteeFilter { index: None, epoch: None, slot: None };
+            if f_vec[0].parse::<u64>().is_ok() {
+                filter.index = Some(f_vec[0].parse::<usize>().unwrap());
+            }
+            if f_vec[1].parse::<usize>().is_ok() {
+                filter.epoch = Some(f_vec[1].parse::<u64>().unwrap());
+            }
+            if f_vec[2].parse::<u64>().is_ok() {
+                filter.slot = Some(f_vec[2].parse::<u64>().unwrap());
+            }
+            let out = client.get_committees(state_id.to_owned(), filter).await.unwrap();
+            for i in out {
+                println!(
+                    "index: {:?}, slot: {:?}, validators: {:?}",
+                    i.index, i.slot, i.validators
+                );
+            }
+        } else {
+            let out = client.get_all_committees(state_id.to_owned()).await.unwrap();
+            for i in out {
+                println!(
+                    "index: {:?}, slot: {:?}, validators: {:?}",
+                    i.index, i.slot, i.validators
+                );
+            }
+        }
+    }
 }
 
 #[derive(Debug, Clone, Args)]
