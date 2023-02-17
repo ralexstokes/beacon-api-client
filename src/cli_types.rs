@@ -4,7 +4,7 @@ use crate::{
 };
 use clap::{Args, Parser, Subcommand};
 use ethereum_consensus::primitives::BlsPublicKey;
-use std::fmt;
+use std::{fmt, str::FromStr};
 
 #[derive(Debug, Parser)]
 #[clap(version, about = "Beacon API client")]
@@ -52,7 +52,7 @@ pub enum BeaconMethod {
     Fork(ForkArg),
     FinalityCheckpoints(FinalityCheckpointsArg),
     Validator(ValidatorArg),
-    // Validators(ValidatorsArg),
+    Validators(ValidatorsArg),
     // ValidatorBalances(ValidatorBalancesArg),
     // Committees(CommitteesArg),
     // SyncCommittees(SyncCommitteesArg),
@@ -161,12 +161,43 @@ impl ValidatorArg {
     }
 }
 
-// #[derive(Debug, Clone, Args)]
-// pub struct ValidatorsArg {
-//     pub state_id: StateId,
-//     pub validator_ids: ValidatorIdUnion,
-//     // pub filters: String,
-// }
+#[derive(Debug, Clone, Args)]
+pub struct ValidatorsArg {
+    pub state_id: StateId,
+    pub validator_ids: Option<String>,
+    pub filters: Option<String>,
+}
+
+impl ValidatorsArg {
+    pub async fn execute(&self, client: &Client) {
+        let state_id = &self.state_id;
+        // parse validator_id strings to PublicKeyOrIndex type
+        let mut ids = vec![];
+        let mut filters = vec![];
+        if let Some(id) = &self.validator_ids {
+            let vec = id.split(",");
+            let id_vec: Vec<&str> = vec.collect();
+            for i in id_vec.iter() {
+                let j: PublicKeyOrIndex = PublicKeyOrIndex::from(i.to_string());
+                ids.push(j);
+            }
+        }
+        // parse filter strings to PublicKeyOrIndex type
+        if let Some(f) = &self.filters {
+            let s = f.split(",");
+            let fil: Vec<&str> = s.collect();
+            for i in fil.iter() {
+                let j: ValidatorStatus = ValidatorStatus::from_str(i).unwrap();
+                filters.push(j.to_owned());
+            }
+        }
+        let out = client
+            .get_validators(state_id.to_owned(), &ids.as_slice(), &filters.as_slice())
+            .await
+            .unwrap();
+        println!("{:?}", out);
+    }
+}
 
 // impl ValidatorsArg {
 //     pub fn to_typed(&self){
@@ -187,7 +218,6 @@ impl ValidatorArg {
 //     pub validator_ids: &'a[PublicKeyOrIndex],
 //     // pub filters: &[ValidatorStatus],
 // }
-
 
 #[derive(Debug, Clone, Args)]
 pub struct ValidatorBalancesArg {
