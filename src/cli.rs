@@ -28,6 +28,15 @@ pub async fn run_cli(client: Client, args: CliConfig) {
         Beacon(BeaconMethod::HeaderAtHead(header_arg)) => {
             header_arg.execute(&client).await
         },
+        Beacon(BeaconMethod::HeaderForSlot(header_arg)) => {
+            println!("Method not yet functional due to unresolved error parsing headers in api_client!")
+        },
+        Beacon(BeaconMethod::HeaderForParentRoot(header_arg)) => {
+            println!("Method not yet functional due to unresolved error parsing headers in api_client!")
+        },
+        Beacon(BeaconMethod::HeaderForBlockId(header_arg)) => {
+            println!("Method not yet functional due to unresolved error parsing headers in api_client!")
+        },
         Beacon(BeaconMethod::Block(block_arg)) => {
             block_arg.execute(&client).await
         }
