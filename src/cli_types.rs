@@ -4,7 +4,7 @@ use crate::{
     CommitteeFilter,
 };
 use clap::{Args, Parser, Subcommand};
-use ethereum_consensus::primitives::BlsPublicKey;
+use ethereum_consensus::primitives::{BlsPublicKey, Epoch, Slot};
 use std::{fmt, str::FromStr};
 
 #[derive(Debug, Parser)]
@@ -56,8 +56,8 @@ pub enum BeaconMethod {
     Validators(ValidatorsArg),
     ValidatorBalances(ValidatorBalancesArg),
     Committees(CommitteesArg),
-    // SyncCommittees(SyncCommitteesArg),
-    // HeaderAtHead,
+    SyncCommittees(SyncCommitteesArg),
+    HeaderAtHead(HeaderArg),
     // HeaderForSlot,
     // HeaderForParentRoot,
     // HeaderForBockId,
@@ -98,7 +98,7 @@ pub enum EventsMethod {
 // arguments for each Namespace::Method subcommand
 #[derive(Debug, Clone, Args)]
 pub struct GenesisArg {
-    genesis: Option<String>,
+    genesis: Option<StateId>,
 }
 
 impl GenesisArg {
@@ -272,11 +272,37 @@ impl CommitteesArg {
 
 #[derive(Debug, Clone, Args)]
 pub struct SyncCommitteesArg {
-    pub state_id: String,
-    pub epoch: String,
+    pub state_id: StateId,
+    pub epoch: Option<Epoch>,
+}
+
+impl SyncCommitteesArg {
+    pub async fn execute(&self, client: &Client) {
+        let id = &self.state_id;
+        let mut epoch = None;
+        if self.epoch != None {
+            epoch = self.epoch;
+        }
+        let out = client.get_sync_committees(id.to_owned(), epoch).await.unwrap();
+        for i in out{
+            for j in i.validators{
+                println!("{}", &j);
+            }
+        }
+    }
 }
 
 #[derive(Debug, Clone, Args)]
 pub struct HeaderArg {
-    pub slot: String,
+    arg: Option<String>,
 }
+
+impl HeaderArg {
+    pub async fn execute(&self, client: &Client) {
+        let out = client.get_beacon_header_at_head().await.unwrap();
+        //println!("{:?}", out.0.root);
+        // println!("{:?}", out.canonical);
+        // println!("{:?}", out.header);
+    }
+}
+

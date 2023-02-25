@@ -1,6 +1,6 @@
 use crate::{
     api_client::Client,
-    cli_types::{BeaconMethod, CliConfig, Namespace::Beacon},
+    cli_types::{BeaconMethod, CliConfig, Namespace::Beacon}, HeaderArg,
 };
 
 pub async fn run_cli(client: Client, args: CliConfig) {
@@ -22,6 +22,12 @@ pub async fn run_cli(client: Client, args: CliConfig) {
         Beacon(BeaconMethod::Committees(ref committees_args)) => {
             committees_args.execute(&client).await
         }
-        _ => println!("coming later"),
+        Beacon(BeaconMethod::SyncCommittees(ref sync_committees_args)) => {
+            sync_committees_args.execute(&client).await
+        },
+        Beacon(BeaconMethod::HeaderAtHead(header_arg)) => {
+            header_arg.execute(&client).await
+        },
+        _ => println!("method not yet implemented"),
     }
 }
