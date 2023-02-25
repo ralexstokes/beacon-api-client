@@ -28,6 +28,9 @@ pub async fn run_cli(client: Client, args: CliConfig) {
         Beacon(BeaconMethod::HeaderAtHead(header_arg)) => {
             header_arg.execute(&client).await
         },
+        Beacon(BeaconMethod::Block(block_arg)) => {
+            block_arg.execute(&client).await
+        }
         _ => println!("method not yet implemented"),
     }
 }

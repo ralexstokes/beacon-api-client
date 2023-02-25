@@ -92,7 +92,7 @@ pub struct RootData {
     pub root: Root,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum BlockId {
     Head,
     Genesis,
@@ -113,6 +113,30 @@ impl fmt::Display for BlockId {
         write!(f, "{printable}")
     }
 }
+
+
+impl FromStr for BlockId {
+    type Err = &'static str;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "finalized" => Ok(BlockId::Finalized),
+            "head" => Ok(BlockId::Head),
+            "genesis" => Ok(BlockId::Genesis),
+            _ => {
+                if s.parse::<u64>().is_ok() {
+                    return Ok(BlockId::Slot(s.parse::<u64>().unwrap()))
+                } else if try_bytes_from_hex_str(s).is_ok() {
+                    return Ok(BlockId::Root(
+                        try_bytes_from_hex_str(s).unwrap().as_slice().try_into().unwrap(),
+                    ))
+                } else {
+                    return Err("invalid input to block_id")
+                }
+            }
+        }
+    }
+}
+
 
 #[derive(Serialize, Deserialize)]
 enum ExecutionStatus {

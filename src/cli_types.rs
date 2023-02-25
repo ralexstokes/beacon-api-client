@@ -1,6 +1,6 @@
 use crate::{
     api_client::Client,
-    types::{PublicKeyOrIndex, StateId, ValidatorStatus},
+    types::{PublicKeyOrIndex, StateId, ValidatorStatus, BlockId},
     CommitteeFilter,
 };
 use clap::{Args, Parser, Subcommand};
@@ -61,7 +61,7 @@ pub enum BeaconMethod {
     // HeaderForSlot,
     // HeaderForParentRoot,
     // HeaderForBockId,
-    // Block,
+    Block(BlockArg),
     // PostBlock,
     // PostBlindedBlock,
     // BlockRoot,
@@ -300,9 +300,28 @@ pub struct HeaderArg {
 impl HeaderArg {
     pub async fn execute(&self, client: &Client) {
         let out = client.get_beacon_header_at_head().await.unwrap();
+        
+        println!("NOT YET FUNCTIONAL DUE TO ERROR PARSING BLOCK HEADERS IN API CLIENT")
         //println!("{:?}", out.0.root);
         // println!("{:?}", out.canonical);
         // println!("{:?}", out.header);
     }
 }
 
+#[derive(Debug, Clone, Args)]
+pub struct BlockArg{
+    pub id: BlockId,
+}
+impl BlockArg {
+    pub async fn execute(&self, client: &Client) {
+        let out = client.get_beacon_block(self.id.to_owned()).await.unwrap();
+        println!("Beacon Block\n");
+        println!("Slot: {:?}\n", out.message.slot);
+        println!("Proposer index: {:?}\n", out.message.proposer_index);
+        println!("Parent root: {:?}\n", out.message.parent_root);
+        println!("State root: {:?}\n", out.message.state_root);
+        println!("Body:\n {:?}\n", out.message.body);
+
+        println!("\n{:?}", out.signature);
+    }
+}
