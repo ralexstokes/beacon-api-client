@@ -114,7 +114,6 @@ impl fmt::Display for BlockId {
     }
 }
 
-
 impl FromStr for BlockId {
     type Err = &'static str;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -136,7 +135,6 @@ impl FromStr for BlockId {
         }
     }
 }
-
 
 #[derive(Serialize, Deserialize)]
 enum ExecutionStatus {

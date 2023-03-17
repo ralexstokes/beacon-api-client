@@ -10,5 +10,4 @@ async fn main() {
     let url: Url = Url::parse(&args.endpoint).unwrap();
     let client = Client::new(url);
     run_cli(client, args).await;
-
 }

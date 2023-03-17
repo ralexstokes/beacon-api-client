@@ -1,6 +1,7 @@
 use crate::{
     api_client::Client,
-    cli_types::{BeaconMethod, CliConfig, Namespace::Beacon}, HeaderArg,
+    cli_types::{BeaconMethod, CliConfig, Namespace::Beacon},
+    HeaderArg,
 };
 
 pub async fn run_cli(client: Client, args: CliConfig) {
@@ -24,22 +25,28 @@ pub async fn run_cli(client: Client, args: CliConfig) {
         }
         Beacon(BeaconMethod::SyncCommittees(ref sync_committees_args)) => {
             sync_committees_args.execute(&client).await
-        },
-        Beacon(BeaconMethod::HeaderAtHead(header_arg)) => {
-            header_arg.execute(&client).await
-        },
-        Beacon(BeaconMethod::HeaderForSlot(header_arg)) => {
-            println!("Method not yet functional due to unresolved error parsing headers in api_client!")
-        },
-        Beacon(BeaconMethod::HeaderForParentRoot(header_arg)) => {
-            println!("Method not yet functional due to unresolved error parsing headers in api_client!")
-        },
-        Beacon(BeaconMethod::HeaderForBlockId(header_arg)) => {
-            println!("Method not yet functional due to unresolved error parsing headers in api_client!")
-        },
-        Beacon(BeaconMethod::Block(block_arg)) => {
-            block_arg.execute(&client).await
         }
+        Beacon(BeaconMethod::HeaderAtHead(header_arg)) => header_arg.execute(&client).await,
+        Beacon(BeaconMethod::HeaderForSlot(header_arg)) => {
+            println!(
+                "Method not yet functional due to unresolved error parsing headers in api_client!"
+            )
+        }
+        Beacon(BeaconMethod::HeaderForParentRoot(header_arg)) => {
+            println!(
+                "Method not yet functional due to unresolved error parsing headers in api_client!"
+            )
+        }
+        Beacon(BeaconMethod::HeaderForBlockId(header_arg)) => {
+            println!(
+                "Method not yet functional due to unresolved error parsing headers in api_client!"
+            )
+        }
+        Beacon(BeaconMethod::Block(block_arg)) => block_arg.execute(&client).await,
+        // Beacon(BeaconMethod::PostBlock(post_block_arg)) => {
+        //     post_block_arg.execute(&client).await
+        // }
+        Beacon(BeaconMethod::BlockRoot(block_root_arg)) => block_root_arg.execute(&client).await,
         _ => println!("method not yet implemented"),
     }
 }

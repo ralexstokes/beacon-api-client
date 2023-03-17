@@ -1,10 +1,13 @@
 use crate::{
     api_client::Client,
-    types::{PublicKeyOrIndex, StateId, ValidatorStatus, BlockId},
+    types::{BlockId, PublicKeyOrIndex, StateId, ValidatorStatus},
     CommitteeFilter,
 };
 use clap::{Args, Parser, Subcommand};
-use ethereum_consensus::primitives::{BlsPublicKey, Epoch, Slot};
+use ethereum_consensus::{
+    phase0::mainnet::SignedBeaconBlock,
+    primitives::{BlsPublicKey, Epoch, Slot},
+};
 use std::{fmt, str::FromStr};
 
 #[derive(Debug, Parser)]
@@ -62,9 +65,9 @@ pub enum BeaconMethod {
     HeaderForParentRoot(HeaderArg),
     HeaderForBlockId(HeaderArg),
     Block(BlockArg),
-    // PostBlock,
+    // PostBlock(PostBlockArg),
     // PostBlindedBlock,
-    // BlockRoot,
+    BlockRoot(BlockRootArg),
     // BlockAttestations,
     // PoolAttestations,
     // PostAttestations,
@@ -284,8 +287,8 @@ impl SyncCommitteesArg {
             epoch = self.epoch;
         }
         let out = client.get_sync_committees(id.to_owned(), epoch).await.unwrap();
-        for i in out{
-            for j in i.validators{
+        for i in out {
+            for j in i.validators {
                 println!("{}", &j);
             }
         }
@@ -300,7 +303,7 @@ pub struct HeaderArg {
 impl HeaderArg {
     pub async fn execute(&self, client: &Client) {
         let out = client.get_beacon_header_at_head().await.unwrap();
-        
+
         println!("NOT YET FUNCTIONAL DUE TO ERROR PARSING BLOCK HEADERS IN API CLIENT")
         //println!("{:?}", out.0.root);
         // println!("{:?}", out.canonical);
@@ -309,7 +312,7 @@ impl HeaderArg {
 }
 
 #[derive(Debug, Clone, Args)]
-pub struct BlockArg{
+pub struct BlockArg {
     pub id: BlockId,
 }
 impl BlockArg {
@@ -323,5 +326,16 @@ impl BlockArg {
         println!("Body:\n {:?}\n", out.message.body);
 
         println!("\n{:?}", out.signature);
+    }
+}
+
+#[derive(Debug, Clone, Args)]
+pub struct BlockRootArg {
+    pub id: BlockId,
+}
+impl BlockRootArg {
+    pub async fn execute(&self, client: &Client) {
+        let out = client.get_beacon_block_root(self.id.to_owned()).await.unwrap();
+        println!("{:?}", out)
     }
 }
