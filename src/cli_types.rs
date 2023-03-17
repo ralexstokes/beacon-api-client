@@ -6,7 +6,7 @@ use crate::{
 use clap::{Args, Parser, Subcommand};
 use ethereum_consensus::{
     phase0::mainnet::SignedBeaconBlock,
-    primitives::{BlsPublicKey, Epoch, Slot},
+    primitives::{BlsPublicKey, CommitteeIndex, Epoch, Slot},
 };
 use std::{fmt, str::FromStr};
 
@@ -65,11 +65,11 @@ pub enum BeaconMethod {
     HeaderForParentRoot(HeaderArg),
     HeaderForBlockId(HeaderArg),
     Block(BlockArg),
-    // PostBlock(PostBlockArg),
+    PostBlock(PostBlockArg),
     // PostBlindedBlock,
     BlockRoot(BlockRootArg),
     BlockAttestations(BlockAttestationsArg),
-    // PoolAttestations,
+    PoolAttestations(PoolAttestationsArg),
     // PostAttestations,
     // AttesterSlashing,
     // PostAttesterSlashing,
@@ -341,6 +341,11 @@ impl BlockRootArg {
 }
 
 #[derive(Debug, Clone, Args)]
+pub struct PostBlockArg {
+    pub block: Option<String>,
+}
+
+#[derive(Debug, Clone, Args)]
 pub struct BlockAttestationsArg {
     pub id: BlockId,
 }
@@ -348,6 +353,29 @@ pub struct BlockAttestationsArg {
 impl BlockAttestationsArg {
     pub async fn execute(&self, client: &Client) {
         let out = client.get_attestations_from_beacon_block(self.id.to_owned()).await.unwrap();
+        for i in out {
+            println!("{:?}", i);
+        }
+    }
+}
+
+#[derive(Debug, Clone, Args)]
+pub struct PoolAttestationsArg {
+    pub slot: String,
+    pub committee_index: String,
+}
+
+impl PoolAttestationsArg {
+    pub async fn execute(&self, client: &Client) {
+        let mut slot = None;
+        let mut committee_index = None;
+        if self.slot != "None" {
+            slot = Some(self.slot.parse::<u64>().unwrap());
+        }
+        if self.committee_index != "None" {
+            committee_index = Some(self.committee_index.parse::<usize>().unwrap());
+        }
+        let out = client.get_attestations_from_pool(slot, committee_index).await.unwrap();
         for i in out {
             println!("{:?}", i);
         }

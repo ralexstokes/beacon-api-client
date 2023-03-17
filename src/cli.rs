@@ -43,12 +43,16 @@ pub async fn run_cli(client: Client, args: CliConfig) {
             )
         }
         Beacon(BeaconMethod::Block(block_arg)) => block_arg.execute(&client).await,
-        // Beacon(BeaconMethod::PostBlock(post_block_arg)) => {
-        //     post_block_arg.execute(&client).await
-        // }
+        Beacon(BeaconMethod::PostBlock(post_block_arg)) => {
+            println!("Method not yet functional - need to work out POSTs and marshalling SignedBeaconBlock type")
+        }
         Beacon(BeaconMethod::BlockRoot(block_root_arg)) => block_root_arg.execute(&client).await,
         Beacon(BeaconMethod::BlockAttestations(block_attestations_arg)) => {
             block_attestations_arg.execute(&client).await
+        }
+        Beacon(BeaconMethod::PoolAttestations(pool_attestations_arg)) => {
+            pool_attestations_arg.execute(&client).await
+            // note that to skip one or other arg, pass <None> as positional cli arg
         }
         _ => println!("method not yet implemented"),
     }
