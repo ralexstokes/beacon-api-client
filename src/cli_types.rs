@@ -68,7 +68,7 @@ pub enum BeaconMethod {
     // PostBlock(PostBlockArg),
     // PostBlindedBlock,
     BlockRoot(BlockRootArg),
-    // BlockAttestations,
+    BlockAttestations(BlockAttestationsArg),
     // PoolAttestations,
     // PostAttestations,
     // AttesterSlashing,
@@ -337,5 +337,19 @@ impl BlockRootArg {
     pub async fn execute(&self, client: &Client) {
         let out = client.get_beacon_block_root(self.id.to_owned()).await.unwrap();
         println!("{:?}", out)
+    }
+}
+
+#[derive(Debug, Clone, Args)]
+pub struct BlockAttestationsArg {
+    pub id: BlockId,
+}
+
+impl BlockAttestationsArg {
+    pub async fn execute(&self, client: &Client) {
+        let out = client.get_attestations_from_beacon_block(self.id.to_owned()).await.unwrap();
+        for i in out {
+            println!("{:?}", i);
+        }
     }
 }

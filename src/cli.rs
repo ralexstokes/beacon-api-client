@@ -47,6 +47,9 @@ pub async fn run_cli(client: Client, args: CliConfig) {
         //     post_block_arg.execute(&client).await
         // }
         Beacon(BeaconMethod::BlockRoot(block_root_arg)) => block_root_arg.execute(&client).await,
+        Beacon(BeaconMethod::BlockAttestations(block_attestations_arg)) => {
+            block_attestations_arg.execute(&client).await
+        }
         _ => println!("method not yet implemented"),
     }
 }
