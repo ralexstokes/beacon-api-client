@@ -54,6 +54,12 @@ pub async fn run_cli(client: Client, args: CliConfig) {
             pool_attestations_arg.execute(&client).await
             // note that to skip one or other arg, pass <None> as positional cli arg
         }
+        Beacon(BeaconMethod::AttesterSlashing(attester_slashing_arg)) => {
+            attester_slashing_arg.execute(&client).await
+        }
+        Beacon(BeaconMethod::ProposerSlashing(proposer_slashing_arg)) => {
+            proposer_slashing_arg.execute(&client).await
+        }
         _ => println!("method not yet implemented"),
     }
 }

@@ -5,7 +5,7 @@ use crate::{
 };
 use clap::{Args, Parser, Subcommand};
 use ethereum_consensus::{
-    phase0::mainnet::SignedBeaconBlock,
+    phase0::mainnet::{AttesterSlashing, ProposerSlashing, SignedBeaconBlock},
     primitives::{BlsPublicKey, CommitteeIndex, Epoch, Slot},
 };
 use std::{fmt, str::FromStr};
@@ -71,9 +71,9 @@ pub enum BeaconMethod {
     BlockAttestations(BlockAttestationsArg),
     PoolAttestations(PoolAttestationsArg),
     // PostAttestations,
-    // AttesterSlashing,
+    AttesterSlashing(AttesterSlashingArg),
     // PostAttesterSlashing,
-    // ProposerSlashing,
+    ProposerSlashing(ProposerSlashingArg),
     // PostProposerSlashing,
     // PostSyncCommittees,
     // VoluntaryExits,
@@ -377,6 +377,34 @@ impl PoolAttestationsArg {
         }
         let out = client.get_attestations_from_pool(slot, committee_index).await.unwrap();
         for i in out {
+            println!("{:?}", i);
+        }
+    }
+}
+
+#[derive(Debug, Clone, Args)]
+pub struct AttesterSlashingArg {
+    pub arg: Option<String>,
+}
+
+impl AttesterSlashingArg {
+    pub async fn execute(&self, client: &Client) {
+        let result = client.get_attester_slashings_from_pool().await.unwrap();
+        for i in result {
+            println!("{:?}", i);
+        }
+    }
+}
+
+#[derive(Debug, Clone, Args)]
+pub struct ProposerSlashingArg {
+    pub arg: Option<String>,
+}
+
+impl ProposerSlashingArg {
+    pub async fn execute(&self, client: &Client) {
+        let result = client.get_proposer_slashings_from_pool().await.unwrap();
+        for i in result {
             println!("{:?}", i);
         }
     }
