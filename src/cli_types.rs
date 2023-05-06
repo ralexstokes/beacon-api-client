@@ -67,7 +67,7 @@ pub enum BeaconMethod {
     HeaderForParentRoot(HeaderArg),
     HeaderForBlockId(HeaderArg),
     Block(BlockArg),
-    PostBlock(PostBlockArg),
+    //PostBlock(PostBlockArg),
     // PostBlindedBlock,
     BlockRoot(BlockRootArg),
     BlockAttestations(BlockAttestationsArg),
@@ -84,9 +84,9 @@ pub enum BeaconMethod {
 
 #[derive(Debug, Clone, Subcommand)]
 pub enum ConfigMethod {
-    ForkSchedule,
-    Spec,
-    DepositContract,
+    ForkSchedule(ForkScheduleArg),
+    Spec(SpecArg),
+    DepositContract(DepositContractArg),
 }
 #[derive(Debug, Clone, Subcommand)]
 pub enum DebugMethod {
@@ -100,7 +100,8 @@ pub enum EventsMethod {
     Events,
 }
 
-// arguments for each Namespace::Method subcommand
+
+//BEACON NAMESPACE ARGS
 #[derive(Debug, Clone, Args)]
 pub struct GenesisArg {
     genesis: Option<StateId>,
@@ -341,28 +342,28 @@ impl BlockRootArg {
     }
 }
 
-#[derive(Debug, Clone, Args)]
-pub struct PostBlockArg {
-    pub block: String,
-}
-impl PostBlockArg{
-    pub fn to_struct(&self) -> Result<SignedBeaconBlock, Error>{
-        println!("\n\ntest 1\n\n\n");
-        println!("{:?}", &self.block);
-        let block_as_value: SignedBeaconBlock = serde_json::from_str(&self.block).unwrap();
-        println!("\n\ntest 2\n\n\n");
-        println!("{:?}", &block_as_value);
+// #[derive(Debug, Clone, Args)]
+// pub struct PostBlockArg {
+//     pub block: String,
+// }
+// impl PostBlockArg{
+//     pub fn to_struct(&self) -> Result<SignedBeaconBlock, Error>{
+//         println!("\n\ntest 1\n\n\n");
+//         println!("{:?}", &self.block);
+//         let block_as_value: SignedBeaconBlock = serde_json::from_str(&self.block).unwrap();
+//         println!("\n\ntest 2\n\n\n");
+//         println!("{:?}", &block_as_value);
 
-        let signed_beacon_block: SignedBeaconBlock = serde_json::from_value(block_as_value).unwrap();
-        Ok(signed_beacon_block)
-    }
-}
+//         let signed_beacon_block: SignedBeaconBlock = serde_json::from_value(block_as_value).unwrap();
+//         Ok(signed_beacon_block)
+//     }
+// }
 
-impl PostBlockArg{
-    pub async fn execute(&self, client: &Client){
-        client.post_signed_beacon_block(&self.to_struct().unwrap()).await.unwrap();
-    }
-}
+// impl PostBlockArg{
+//     pub async fn execute(&self, client: &Client){
+//         client.post_signed_beacon_block(&self.to_struct().unwrap()).await.unwrap();
+//     }
+// }
 
 
 #[derive(Debug, Clone, Args)]
@@ -430,7 +431,6 @@ impl ProposerSlashingArg {
     }
 }
 
-
 #[derive(Debug, Clone, Args)]
 pub struct VoluntaryExitsArg{
     pub arg: Option<String>
@@ -445,3 +445,43 @@ impl VoluntaryExitsArg{
     }
 }
 
+
+// CONFIG NAMESPACE ARGS
+
+#[derive(Debug, Clone, Args)]
+pub struct ForkScheduleArg{
+    pub arg: Option<String>
+}
+
+impl ForkScheduleArg{
+    pub async fn execute(&self, client: &Client) {
+        let result = client.get_fork_schedule().await.unwrap();
+        println!("{:?}", result)
+    }
+}
+
+
+
+#[derive(Debug, Clone, Args)]
+pub struct SpecArg{
+    pub arg: Option<String>
+}
+
+impl SpecArg{
+    pub async fn execute(&self, client: &Client) {
+        let result = client.get_spec().await.unwrap();
+        println!("{:?}", result)
+    }
+}
+
+#[derive(Debug, Clone, Args)]
+pub struct DepositContractArg{
+    pub arg: Option<String>
+}
+
+impl DepositContractArg{
+    pub async fn execute(&self, client: &Client) {
+        let result = client.get_deposit_contract_address().await.unwrap();
+          println!("{:?}", result.address)
+  }
+}

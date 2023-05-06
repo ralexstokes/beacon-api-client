@@ -1,6 +1,6 @@
 use crate::{
     api_client::Client,
-    cli_types::{BeaconMethod, CliConfig, Namespace::Beacon},
+    cli_types::{BeaconMethod, ConfigMethod, CliConfig, Namespace::{Beacon, Config}},
     HeaderArg,
 };
 
@@ -43,9 +43,10 @@ pub async fn run_cli(client: Client, args: CliConfig) {
             )
         }
         Beacon(BeaconMethod::Block(block_arg)) => block_arg.execute(&client).await,
-        Beacon(BeaconMethod::PostBlock(post_block_arg)) => {
-            post_block_arg.execute(&client).await
-        }
+        // Beacon(BeaconMethod::PostBlock(post_block_arg)) => {
+        //     // post_block_arg.execute(&client).await
+        //     println!("Method not yet implemented")
+        // }
         Beacon(BeaconMethod::BlockRoot(block_root_arg)) => block_root_arg.execute(&client).await,
         Beacon(BeaconMethod::BlockAttestations(block_attestations_arg)) => {
             block_attestations_arg.execute(&client).await
@@ -62,7 +63,16 @@ pub async fn run_cli(client: Client, args: CliConfig) {
         }
         Beacon(BeaconMethod::VoluntaryExits(voluntary_exits_arg)) => {
             voluntary_exits_arg.execute(&client).await
-        }
+        },
+        Config(ConfigMethod::ForkSchedule(fork_schedule_arg)) => {
+            fork_schedule_arg.execute(&client).await
+        },
+        Config(ConfigMethod::Spec(spec_arg))=> {
+            spec_arg.execute(&client).await
+        },
+        Config(ConfigMethod::DepositContract(deposit_contract_arg))=> {
+            deposit_contract_arg.execute(&client).await
+        },
         _ => println!("method not yet implemented"),
     }
 }
