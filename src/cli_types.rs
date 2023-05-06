@@ -90,8 +90,9 @@ pub enum ConfigMethod {
 #[derive(Debug, Clone, Subcommand)]
 pub enum DebugMethod {
     //Debug ns
-    State,
+    State(StateArg),
     Head,
+    ForkChoice,
 }
 #[derive(Debug, Clone, Subcommand)]
 pub enum EventsMethod {
@@ -477,5 +478,20 @@ impl DepositContractArg {
     pub async fn execute(&self, client: &Client) {
         let result = client.get_deposit_contract_address().await.unwrap();
         println!("{:?}", result.address)
+    }
+}
+
+// DEBUG NAMESACE ARGS
+
+#[derive(Debug, Clone, Args)]
+pub struct StateArg {
+    state_id: StateId,
+}
+
+impl StateArg {
+    pub async fn execute(&self, client: &Client) {
+        let id = &self.state_id;
+        let result = client.get_state(id.to_owned()).await.unwrap();
+        println!("{:?}", result)
     }
 }

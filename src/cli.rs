@@ -1,8 +1,8 @@
 use crate::{
     api_client::Client,
     cli_types::{
-        BeaconMethod, CliConfig, ConfigMethod,
-        Namespace::{Beacon, Config},
+        BeaconMethod, CliConfig, ConfigMethod, DebugMethod,
+        Namespace::{Beacon, Config, Debug},
     },
     HeaderArg,
 };
@@ -74,6 +74,7 @@ pub async fn run_cli(client: Client, args: CliConfig) {
         Config(ConfigMethod::DepositContract(deposit_contract_arg)) => {
             deposit_contract_arg.execute(&client).await
         }
+        Debug(DebugMethod::State(state_arg)) => state_arg.execute(&client).await,
         _ => println!("method not yet implemented"),
     }
 }
