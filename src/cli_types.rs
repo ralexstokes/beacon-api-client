@@ -8,7 +8,9 @@ use ethereum_consensus::{
     phase0::mainnet::{AttesterSlashing, ProposerSlashing, SignedBeaconBlock},
     primitives::{BlsPublicKey, CommitteeIndex, Epoch, Slot},
 };
+use serde::{Serialize, Deserialize};
 use std::{fmt, str::FromStr};
+use std::fmt::Error;
 
 #[derive(Debug, Parser)]
 #[clap(version, about = "Beacon API client")]
@@ -76,7 +78,7 @@ pub enum BeaconMethod {
     ProposerSlashing(ProposerSlashingArg),
     // PostProposerSlashing,
     // PostSyncCommittees,
-    // VoluntaryExits,
+    VoluntaryExits(VoluntaryExitsArg),
     // PostVoluntaryExits,
 }
 
@@ -302,8 +304,7 @@ pub struct HeaderArg {
 
 impl HeaderArg {
     pub async fn execute(&self, client: &Client) {
-        let out = client.get_beacon_header_at_head().await.unwrap();
-
+        let _out = client.get_beacon_header_at_head().await.unwrap();
         println!("NOT YET FUNCTIONAL DUE TO ERROR PARSING BLOCK HEADERS IN API CLIENT")
         //println!("{:?}", out.0.root);
         // println!("{:?}", out.canonical);
@@ -342,8 +343,27 @@ impl BlockRootArg {
 
 #[derive(Debug, Clone, Args)]
 pub struct PostBlockArg {
-    pub block: Option<String>,
+    pub block: String,
 }
+impl PostBlockArg{
+    pub fn to_struct(&self) -> Result<SignedBeaconBlock, Error>{
+        println!("\n\ntest 1\n\n\n");
+        println!("{:?}", &self.block);
+        let block_as_value: SignedBeaconBlock = serde_json::from_str(&self.block).unwrap();
+        println!("\n\ntest 2\n\n\n");
+        println!("{:?}", &block_as_value);
+
+        let signed_beacon_block: SignedBeaconBlock = serde_json::from_value(block_as_value).unwrap();
+        Ok(signed_beacon_block)
+    }
+}
+
+impl PostBlockArg{
+    pub async fn execute(&self, client: &Client){
+        client.post_signed_beacon_block(&self.to_struct().unwrap()).await.unwrap();
+    }
+}
+
 
 #[derive(Debug, Clone, Args)]
 pub struct BlockAttestationsArg {
@@ -409,3 +429,19 @@ impl ProposerSlashingArg {
         }
     }
 }
+
+
+#[derive(Debug, Clone, Args)]
+pub struct VoluntaryExitsArg{
+    pub arg: Option<String>
+}
+
+impl VoluntaryExitsArg{
+    pub async fn execute(&self, client: &Client) {
+        let result = client.get_voluntary_exits_from_pool().await.unwrap();
+        for i in result {
+            println!("{:?}", i);
+        }
+    }
+}
+

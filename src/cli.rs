@@ -44,7 +44,7 @@ pub async fn run_cli(client: Client, args: CliConfig) {
         }
         Beacon(BeaconMethod::Block(block_arg)) => block_arg.execute(&client).await,
         Beacon(BeaconMethod::PostBlock(post_block_arg)) => {
-            println!("Method not yet functional - need to work out POSTs and marshalling SignedBeaconBlock type")
+            post_block_arg.execute(&client).await
         }
         Beacon(BeaconMethod::BlockRoot(block_root_arg)) => block_root_arg.execute(&client).await,
         Beacon(BeaconMethod::BlockAttestations(block_attestations_arg)) => {
@@ -59,6 +59,9 @@ pub async fn run_cli(client: Client, args: CliConfig) {
         }
         Beacon(BeaconMethod::ProposerSlashing(proposer_slashing_arg)) => {
             proposer_slashing_arg.execute(&client).await
+        }
+        Beacon(BeaconMethod::VoluntaryExits(voluntary_exits_arg)) => {
+            voluntary_exits_arg.execute(&client).await
         }
         _ => println!("method not yet implemented"),
     }
