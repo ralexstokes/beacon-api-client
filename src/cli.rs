@@ -1,6 +1,9 @@
 use crate::{
     api_client::Client,
-    cli_types::{BeaconMethod, ConfigMethod, CliConfig, Namespace::{Beacon, Config}},
+    cli_types::{
+        BeaconMethod, CliConfig, ConfigMethod,
+        Namespace::{Beacon, Config},
+    },
     HeaderArg,
 };
 
@@ -63,16 +66,14 @@ pub async fn run_cli(client: Client, args: CliConfig) {
         }
         Beacon(BeaconMethod::VoluntaryExits(voluntary_exits_arg)) => {
             voluntary_exits_arg.execute(&client).await
-        },
+        }
         Config(ConfigMethod::ForkSchedule(fork_schedule_arg)) => {
             fork_schedule_arg.execute(&client).await
-        },
-        Config(ConfigMethod::Spec(spec_arg))=> {
-            spec_arg.execute(&client).await
-        },
-        Config(ConfigMethod::DepositContract(deposit_contract_arg))=> {
+        }
+        Config(ConfigMethod::Spec(spec_arg)) => spec_arg.execute(&client).await,
+        Config(ConfigMethod::DepositContract(deposit_contract_arg)) => {
             deposit_contract_arg.execute(&client).await
-        },
+        }
         _ => println!("method not yet implemented"),
     }
 }

@@ -8,9 +8,8 @@ use ethereum_consensus::{
     phase0::mainnet::{AttesterSlashing, ProposerSlashing, SignedBeaconBlock},
     primitives::{BlsPublicKey, CommitteeIndex, Epoch, Slot},
 };
-use serde::{Serialize, Deserialize};
-use std::{fmt, str::FromStr};
-use std::fmt::Error;
+use serde::{Deserialize, Serialize};
+use std::{fmt, fmt::Error, str::FromStr};
 
 #[derive(Debug, Parser)]
 #[clap(version, about = "Beacon API client")]
@@ -99,7 +98,6 @@ pub enum EventsMethod {
     //Events ns
     Events,
 }
-
 
 //BEACON NAMESPACE ARGS
 #[derive(Debug, Clone, Args)]
@@ -354,8 +352,8 @@ impl BlockRootArg {
 //         println!("\n\ntest 2\n\n\n");
 //         println!("{:?}", &block_as_value);
 
-//         let signed_beacon_block: SignedBeaconBlock = serde_json::from_value(block_as_value).unwrap();
-//         Ok(signed_beacon_block)
+//         let signed_beacon_block: SignedBeaconBlock =
+// serde_json::from_value(block_as_value).unwrap();         Ok(signed_beacon_block)
 //     }
 // }
 
@@ -364,7 +362,6 @@ impl BlockRootArg {
 //         client.post_signed_beacon_block(&self.to_struct().unwrap()).await.unwrap();
 //     }
 // }
-
 
 #[derive(Debug, Clone, Args)]
 pub struct BlockAttestationsArg {
@@ -432,11 +429,11 @@ impl ProposerSlashingArg {
 }
 
 #[derive(Debug, Clone, Args)]
-pub struct VoluntaryExitsArg{
-    pub arg: Option<String>
+pub struct VoluntaryExitsArg {
+    pub arg: Option<String>,
 }
 
-impl VoluntaryExitsArg{
+impl VoluntaryExitsArg {
     pub async fn execute(&self, client: &Client) {
         let result = client.get_voluntary_exits_from_pool().await.unwrap();
         for i in result {
@@ -445,29 +442,26 @@ impl VoluntaryExitsArg{
     }
 }
 
-
 // CONFIG NAMESPACE ARGS
 
 #[derive(Debug, Clone, Args)]
-pub struct ForkScheduleArg{
-    pub arg: Option<String>
+pub struct ForkScheduleArg {
+    pub arg: Option<String>,
 }
 
-impl ForkScheduleArg{
+impl ForkScheduleArg {
     pub async fn execute(&self, client: &Client) {
         let result = client.get_fork_schedule().await.unwrap();
         println!("{:?}", result)
     }
 }
 
-
-
 #[derive(Debug, Clone, Args)]
-pub struct SpecArg{
-    pub arg: Option<String>
+pub struct SpecArg {
+    pub arg: Option<String>,
 }
 
-impl SpecArg{
+impl SpecArg {
     pub async fn execute(&self, client: &Client) {
         let result = client.get_spec().await.unwrap();
         println!("{:?}", result)
@@ -475,13 +469,13 @@ impl SpecArg{
 }
 
 #[derive(Debug, Clone, Args)]
-pub struct DepositContractArg{
-    pub arg: Option<String>
+pub struct DepositContractArg {
+    pub arg: Option<String>,
 }
 
-impl DepositContractArg{
+impl DepositContractArg {
     pub async fn execute(&self, client: &Client) {
         let result = client.get_deposit_contract_address().await.unwrap();
-          println!("{:?}", result.address)
-  }
+        println!("{:?}", result.address)
+    }
 }
