@@ -12,14 +12,14 @@ use crate::{
 };
 use ethereum_consensus::{
     altair::mainnet::{
-        SignedContributionAndProof, SyncCommitteeContribution, SyncCommitteeMessage,
+        BeaconState, SignedContributionAndProof, SyncCommitteeContribution, SyncCommitteeMessage,
     },
     bellatrix::mainnet::{BlindedBeaconBlock, SignedBlindedBeaconBlock},
     builder::SignedValidatorRegistration,
     networking::PeerId,
     phase0::mainnet::{
-        Attestation, AttestationData, AttesterSlashing, BeaconBlock, BeaconState, Fork,
-        ProposerSlashing, SignedAggregateAndProof, SignedBeaconBlock, SignedVoluntaryExit,
+        Attestation, AttestationData, AttesterSlashing, BeaconBlock, Fork, ProposerSlashing,
+        SignedAggregateAndProof, SignedBeaconBlock, SignedVoluntaryExit,
     },
     primitives::{Bytes32, CommitteeIndex, Epoch, RandaoReveal, Root, Slot, ValidatorIndex},
 };

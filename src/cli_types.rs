@@ -6,7 +6,7 @@ use crate::{
 use clap::{Args, Parser, Subcommand};
 use ethereum_consensus::{
     phase0::mainnet::{AttesterSlashing, ProposerSlashing, SignedBeaconBlock},
-    primitives::{BlsPublicKey, CommitteeIndex, Epoch, Slot},
+    primitives::{BlsPublicKey, CommitteeIndex, Coordinate, Epoch, Slot},
 };
 use serde::{Deserialize, Serialize};
 use std::{fmt, fmt::Error, str::FromStr};
@@ -29,9 +29,10 @@ pub enum Namespace {
     Config(ConfigMethod),
     #[clap(subcommand)]
     Debug(DebugMethod),
+    // #[clap(subcommand)]
+    // Events(EventsMethod),
     #[clap(subcommand)]
-    Events(EventsMethod),
-    // Node(NodeMethod),
+    Node(NodeMethod),
     // Validator(ValidatorMethod),
 }
 
@@ -41,8 +42,8 @@ impl fmt::Display for Namespace {
             Namespace::Beacon(_) => "beacon",
             Namespace::Config(_) => "config",
             Namespace::Debug(_) => "debug",
-            Namespace::Events(_) => "events",
-            // Namespace::Node(_) => "node",
+            // Namespace::Events(_) => "events",
+            Namespace::Node(_) => "node",
             // Namespace::Validator(_) => "validator",
         };
         write!(f, "{printable}")
@@ -91,15 +92,27 @@ pub enum ConfigMethod {
 pub enum DebugMethod {
     //Debug ns
     State(StateArg),
-    Head,
-    ForkChoice,
+    Head(HeadArg),
 }
+// #[derive(Debug, Clone, Subcommand)]
+// pub enum EventsMethod {
+//     //Events ns
+//     Events,
+// }
+
 #[derive(Debug, Clone, Subcommand)]
-pub enum EventsMethod {
-    //Events ns
-    Events,
+pub enum NodeMethod {
+    //Node ns
+    Identity(IdentityArg),
+    // Peers(PeersArg),
+    // Peer(PeerArg),
+    // PeerSummary(PeerSummaryArg),
+    // NodeVersion(NodeVersionArg),
+    // Syncing(SyncingArg),
+    // Health(HealthArg),
 }
 
+//ARGS
 //BEACON NAMESPACE ARGS
 #[derive(Debug, Clone, Args)]
 pub struct GenesisArg {
@@ -493,5 +506,44 @@ impl StateArg {
         let id = &self.state_id;
         let result = client.get_state(id.to_owned()).await.unwrap();
         println!("{:?}", result)
+    }
+}
+
+#[derive(Debug, Clone, Args)]
+pub struct HeadArg {
+    pub arg: Option<String>,
+}
+
+impl HeadArg {
+    pub async fn execute(&self, client: &Client) {
+        let result = client.get_heads().await.unwrap();
+        // uncomment when this PR is merged https://github.com/ralexstokes/ethereum-consensus/pull/196
+        // for i in result.iter() {
+        //     println!("{:?}", i.coordinate)
+        // }
+    }
+}
+
+//Node ns args
+
+#[derive(Debug, Clone, Args)]
+pub struct IdentityArg {
+    pub arg: Option<String>,
+}
+
+impl IdentityArg {
+    pub async fn execute(&self, client: &Client) {
+        let result = client.get_node_identity().await.unwrap();
+        println!("Discovery Addresses:");
+        for i in result.discovery_addresses.iter() {
+            println!("{}", i);
+        }
+        println!("P2P Addresses:");
+        for i in result.p2p_addresses.iter() {
+            println!("{}", i);
+        }
+        println!("Peer ID: {}", result.peer_id);
+        println!("ENR: {}", result.enr);
+        println!("Metadata: {:?}", result.metadata)
     }
 }
