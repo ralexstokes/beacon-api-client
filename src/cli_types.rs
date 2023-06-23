@@ -106,7 +106,7 @@ pub enum NodeMethod {
     PeerSummary(PeerSummaryArg),
     NodeVersion(NodeVersionArg),
     Syncing(SyncingArg),
-    // Health(HealthArg),
+    Health(HealthArg),
 }
 
 //ARGS
@@ -639,5 +639,17 @@ impl SyncingArg {
         println!("head slot: {}", &out.head_slot);
         println!("syncing distance: {}", &out.sync_distance);
         println!("is syncing?: {}", &out.is_syncing);
+    }
+}
+
+#[derive(Debug, Clone, Args)]
+pub struct HealthArg {
+    pub arg: Option<String>,
+}
+
+impl HealthArg {
+    pub async fn execute(&self, client: &Client) {
+        let out = client.get_health().await.unwrap();
+        println!("health status: {:?}", out);
     }
 }
