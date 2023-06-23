@@ -79,6 +79,7 @@ pub async fn run_cli(client: Client, args: CliConfig) {
         Node(NodeMethod::Identity(identity_arg)) => identity_arg.execute(&client).await,
         Node(NodeMethod::Peers(peers_arg)) => peers_arg.execute(&client).await,
         Node(NodeMethod::Peer(peer_arg)) => peer_arg.execute(&client).await,
+        Node(NodeMethod::PeerSummary(peer_summary_arg)) => peer_summary_arg.execute(&client).await,
         _ => println!("method not yet implemented"),
     }
 }

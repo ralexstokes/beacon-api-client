@@ -1,6 +1,6 @@
 use crate::{
     api_client::Client,
-    types::{BlockId, PeerState, PublicKeyOrIndex, StateId, ValidatorStatus},
+    types::{BlockId, PeerState, PeerSummary, PublicKeyOrIndex, StateId, ValidatorStatus},
     CommitteeFilter, ConnectionOrientation,
 };
 use clap::{Args, Parser, Subcommand};
@@ -103,7 +103,7 @@ pub enum NodeMethod {
     Identity(IdentityArg),
     Peers(PeersArg),
     Peer(PeerArg),
-    // PeerSummary(PeerSummaryArg),
+    PeerSummary(PeerSummaryArg),
     // NodeVersion(NodeVersionArg),
     // Syncing(SyncingArg),
     // Health(HealthArg),
@@ -598,5 +598,20 @@ impl PeerArg {
         println!("Last seen p2p address: {}", &out.last_seen_p2p_address);
         println!("state: {}", &out.state);
         println!("connection orientation: {}", &out.direction);
+    }
+}
+
+#[derive(Debug, Clone, Args)]
+pub struct PeerSummaryArg {
+    pub arg: Option<String>,
+}
+
+impl PeerSummaryArg {
+    pub async fn execute(&self, client: &Client) {
+        let out = client.get_peer_summary().await.unwrap();
+        println!("disconnected: {}", &out.disconnected);
+        println!("connecting: {}", &out.connecting);
+        println!("connected: {}", &out.connected);
+        println!("disconnecting: {}", &out.disconnecting);
     }
 }
