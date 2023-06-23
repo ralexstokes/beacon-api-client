@@ -4,7 +4,7 @@ use crate::{
     CommitteeFilter, ConnectionOrientation,
 };
 use clap::{Args, Parser, Subcommand};
-use ethereum_consensus::primitives::Epoch;
+use ethereum_consensus::{networking::PeerId, phase0::BeaconBlockHeader, primitives::Epoch};
 use itertools::enumerate;
 use std::{fmt, str::FromStr};
 
@@ -102,7 +102,7 @@ pub enum NodeMethod {
     //Node ns
     Identity(IdentityArg),
     Peers(PeersArg),
-    // Peer(PeerArg),
+    Peer(PeerArg),
     // PeerSummary(PeerSummaryArg),
     // NodeVersion(NodeVersionArg),
     // Syncing(SyncingArg),
@@ -315,10 +315,10 @@ pub struct HeaderArg {
 impl HeaderArg {
     pub async fn execute(&self, client: &Client) {
         let _out = client.get_beacon_header_at_head().await.unwrap();
-        println!("NOT YET FUNCTIONAL DUE TO ERROR PARSING BLOCK HEADERS IN API CLIENT")
-        //println!("{:?}", out.0.root);
-        // println!("{:?}", out.canonical);
-        // println!("{:?}", out.header);
+        // println!("NOT YET FUNCTIONAL DUE TO ERROR PARSING BLOCK HEADERS IN API CLIENT")
+        println!("{:?}", _out.root);
+        println!("{:?}", _out.canonical);
+        println!("{:?}", _out.signed_header);
     }
 }
 
@@ -328,15 +328,15 @@ pub struct BlockArg {
 }
 impl BlockArg {
     pub async fn execute(&self, client: &Client) {
-        let out = client.get_beacon_block(self.id.to_owned()).await.unwrap();
-        println!("Beacon Block\n");
-        println!("Slot: {:?}\n", out.message.slot);
-        println!("Proposer index: {:?}\n", out.message.proposer_index);
-        println!("Parent root: {:?}\n", out.message.parent_root);
-        println!("State root: {:?}\n", out.message.state_root);
-        println!("Body:\n {:?}\n", out.message.body);
-
-        println!("\n{:?}", out.signature);
+        println!("NOT YET FUNCTIONAL DUE TO ERROR PARSING BLOCK HEADERS IN API CLIENT")
+        // let _out = client.get_beacon_block(self.id.to_owned()).await.unwrap();
+        // println!("Beacon Block\n");
+        // println!("Slot: {:?}\n", _out[0].slot);
+        // println!("Proposer index: {:?}\n", _out[0].proposer_index);
+        // println!("Parent root: {:?}\n", out.message.parent_root);
+        // println!("State root: {:?}\n", out.message.state_root);
+        // println!("Body:\n {:?}\n", out.message.body);
+        // println!("\n{:?}", out.signature);
     }
 }
 
@@ -581,5 +581,22 @@ impl PeersArg {
             println!("state: {}", &data.state);
             println!("connection orientation: {}", &data.direction);
         }
+    }
+}
+
+#[derive(Debug, Clone, Args)]
+pub struct PeerArg {
+    pub peer_id: String,
+}
+
+impl PeerArg {
+    pub async fn execute(&self, client: &Client) {
+        let id: PeerId = PeerId::from_str(&self.peer_id).unwrap();
+        let out = client.get_peer(id).await.unwrap();
+        println!("id: {}", &out.peer_id);
+        println!("ENR: {:?}", &out.enr);
+        println!("Last seen p2p address: {}", &out.last_seen_p2p_address);
+        println!("state: {}", &out.state);
+        println!("connection orientation: {}", &out.direction);
     }
 }

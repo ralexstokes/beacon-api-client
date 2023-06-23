@@ -1,9 +1,8 @@
 use crate::error::ApiError;
 use ethereum_consensus::{
     altair::mainnet::MetaData,
-    capella::mainnet::SignedBeaconBlockHeader,
     networking::{Enr, Multiaddr, PeerId},
-    phase0::mainnet::{Checkpoint, Validator},
+    phase0::mainnet::{Checkpoint, SignedBeaconBlockHeader, Validator},
     primitives::{
         BlsPublicKey, ChainId, CommitteeIndex, Coordinate, Epoch, ExecutionAddress, Gwei, Root,
         Slot, ValidatorIndex, Version,
