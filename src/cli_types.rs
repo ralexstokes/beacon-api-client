@@ -104,8 +104,8 @@ pub enum NodeMethod {
     Peers(PeersArg),
     Peer(PeerArg),
     PeerSummary(PeerSummaryArg),
-    // NodeVersion(NodeVersionArg),
-    // Syncing(SyncingArg),
+    NodeVersion(NodeVersionArg),
+    Syncing(SyncingArg),
     // Health(HealthArg),
 }
 
@@ -613,5 +613,31 @@ impl PeerSummaryArg {
         println!("connecting: {}", &out.connecting);
         println!("connected: {}", &out.connected);
         println!("disconnecting: {}", &out.disconnecting);
+    }
+}
+
+#[derive(Debug, Clone, Args)]
+pub struct NodeVersionArg {
+    pub arg: Option<String>,
+}
+
+impl NodeVersionArg {
+    pub async fn execute(&self, client: &Client) {
+        let out = client.get_node_version().await.unwrap();
+        println!("{}", &out);
+    }
+}
+
+#[derive(Debug, Clone, Args)]
+pub struct SyncingArg {
+    pub arg: Option<String>,
+}
+
+impl SyncingArg {
+    pub async fn execute(&self, client: &Client) {
+        let out = client.get_sync_status().await.unwrap();
+        println!("head slot: {}", &out.head_slot);
+        println!("syncing distance: {}", &out.sync_distance);
+        println!("is syncing?: {}", &out.is_syncing);
     }
 }
