@@ -2,8 +2,8 @@ use crate::{
     api_client::Client,
     cli_types::{
         BeaconMethod, CliConfig, ConfigMethod, DebugMethod,
-        Namespace::{Beacon, Config, Debug, Node},
-        NodeMethod,
+        Namespace::{Beacon, Config, Debug, Node, Validator},
+        NodeMethod, ValidatorMethod,
     },
 };
 
@@ -83,6 +83,9 @@ pub async fn run_cli(client: Client, args: CliConfig) {
         Node(NodeMethod::NodeVersion(node_version_arg)) => node_version_arg.execute(&client).await,
         Node(NodeMethod::Syncing(syncing_arg)) => syncing_arg.execute(&client).await,
         Node(NodeMethod::Health(health_arg)) => health_arg.execute(&client).await,
+        Validator(ValidatorMethod::ProposerDuties(proposer_duties_arg)) => {
+            proposer_duties_arg.execute(&client).await
+        }
         _ => println!("method not yet implemented"),
     }
 }

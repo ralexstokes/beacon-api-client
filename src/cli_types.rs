@@ -30,7 +30,8 @@ pub enum Namespace {
     // Events(EventsMethod),
     #[clap(subcommand)]
     Node(NodeMethod),
-    // Validator(ValidatorMethod),
+    #[clap(subcommand)]
+    Validator(ValidatorMethod),
 }
 
 impl fmt::Display for Namespace {
@@ -41,7 +42,7 @@ impl fmt::Display for Namespace {
             Namespace::Debug(_) => "debug",
             // Namespace::Events(_) => "events",
             Namespace::Node(_) => "node",
-            // Namespace::Validator(_) => "validator",
+            Namespace::Validator(_) => "validator",
         };
         write!(f, "{printable}")
     }
@@ -107,6 +108,15 @@ pub enum NodeMethod {
     NodeVersion(NodeVersionArg),
     Syncing(SyncingArg),
     Health(HealthArg),
+}
+
+#[derive(Debug, Clone, Subcommand)]
+pub enum ValidatorMethod {
+    //Node ns
+    //POST  Attester(AttesterArg),
+    ProposerDuties(ProposerDutiesArg),
+    //POST Duties(DutiesArg),
+    //Blocks(BlocksArg),
 }
 
 //ARGS
@@ -650,6 +660,21 @@ pub struct HealthArg {
 impl HealthArg {
     pub async fn execute(&self, client: &Client) {
         let out = client.get_health().await.unwrap();
+        println!("health status: {:?}", out);
+    }
+}
+
+//validator ns args
+
+#[derive(Debug, Clone, Args)]
+pub struct ProposerDutiesArg {
+    pub epoch: String,
+}
+
+impl ProposerDutiesArg {
+    pub async fn execute(&self, client: &Client) {
+        let epoch: Epoch = self.epoch.parse::<u64>().unwrap();
+        let out = client.get_proposer_duties(epoch).await.unwrap();
         println!("health status: {:?}", out);
     }
 }
