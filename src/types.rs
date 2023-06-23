@@ -1,8 +1,9 @@
 use crate::error::ApiError;
 use ethereum_consensus::{
     altair::mainnet::MetaData,
+    capella::mainnet::SignedBeaconBlockHeader,
     networking::{Enr, Multiaddr, PeerId},
-    phase0::mainnet::{Checkpoint, SignedBeaconBlockHeader, Validator},
+    phase0::mainnet::{Checkpoint, Validator},
     primitives::{
         BlsPublicKey, ChainId, CommitteeIndex, Coordinate, Epoch, ExecutionAddress, Gwei, Root,
         Slot, ValidatorIndex, Version,
@@ -319,7 +320,7 @@ pub struct NetworkIdentity {
     pub metadata: MetaData,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "lowercase")]
 pub enum PeerState {
     Disconnected,
@@ -340,7 +341,20 @@ impl fmt::Display for PeerState {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+impl FromStr for PeerState {
+    type Err = &'static str;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "disconnected" => Ok(PeerState::Disconnected),
+            "connecting" => Ok(PeerState::Connecting),
+            "connected" => Ok(PeerState::Connected),
+            "disconnecting" => Ok(PeerState::Disconnecting),
+            _ => return Err("invalid input to peer_state"),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "lowercase")]
 pub enum ConnectionOrientation {
     Inbound,
@@ -357,6 +371,17 @@ impl fmt::Display for ConnectionOrientation {
     }
 }
 
+impl FromStr for ConnectionOrientation {
+    type Err = &'static str;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "inbound" => Ok(ConnectionOrientation::Inbound),
+            "outbound" => Ok(ConnectionOrientation::Outbound),
+            _ => return Err("invalid input to connection_orientation"),
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize)]
 pub struct PeerDescriptor {
     pub state: PeerState,
@@ -366,7 +391,7 @@ pub struct PeerDescriptor {
 #[derive(Serialize, Deserialize)]
 pub struct PeerDescription {
     pub peer_id: PeerId,
-    pub enr: Enr,
+    pub enr: Option<Enr>,
     pub last_seen_p2p_address: Multiaddr,
     pub state: PeerState,
     pub direction: ConnectionOrientation,

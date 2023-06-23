@@ -1,15 +1,12 @@
 use crate::{
     api_client::Client,
-    types::{BlockId, PublicKeyOrIndex, StateId, ValidatorStatus},
-    CommitteeFilter,
+    types::{BlockId, PeerState, PublicKeyOrIndex, StateId, ValidatorStatus},
+    CommitteeFilter, ConnectionOrientation,
 };
 use clap::{Args, Parser, Subcommand};
-use ethereum_consensus::{
-    phase0::mainnet::{AttesterSlashing, ProposerSlashing, SignedBeaconBlock},
-    primitives::{BlsPublicKey, CommitteeIndex, Coordinate, Epoch, Slot},
-};
-use serde::{Deserialize, Serialize};
-use std::{fmt, fmt::Error, str::FromStr};
+use ethereum_consensus::primitives::Epoch;
+use itertools::enumerate;
+use std::{fmt, str::FromStr};
 
 #[derive(Debug, Parser)]
 #[clap(version, about = "Beacon API client")]
@@ -104,7 +101,7 @@ pub enum DebugMethod {
 pub enum NodeMethod {
     //Node ns
     Identity(IdentityArg),
-    // Peers(PeersArg),
+    Peers(PeersArg),
     // Peer(PeerArg),
     // PeerSummary(PeerSummaryArg),
     // NodeVersion(NodeVersionArg),
@@ -545,5 +542,44 @@ impl IdentityArg {
         println!("Peer ID: {}", result.peer_id);
         println!("ENR: {}", result.enr);
         println!("Metadata: {:?}", result.metadata)
+    }
+}
+
+#[derive(Debug, Clone, Args)]
+pub struct PeersArg {
+    pub peer_state: String,
+    pub orientation: String,
+}
+
+impl PeersArg {
+    pub async fn execute(&self, client: &Client) {
+        let p = &self.peer_state;
+        let p_vec = p.split(",");
+        let peer_vec: Vec<&str> = p_vec.collect();
+        let mut peer_states = vec![];
+        for i in peer_vec.iter() {
+            let state: PeerState = PeerState::from_str(i.trim_start().trim_end()).unwrap();
+            peer_states.push(state)
+        }
+        let o = &self.orientation;
+        let o_vec = o.split(",");
+        let orientation_vec: Vec<&str> = o_vec.collect();
+        let mut orientations = vec![];
+        for i in orientation_vec.iter() {
+            let orientation: ConnectionOrientation = ConnectionOrientation::from_str(i).unwrap();
+            orientations.push(orientation)
+        }
+        let out =
+            client.get_node_peers(peer_states.as_slice(), orientations.as_slice()).await.unwrap();
+
+        println!("length of output: {:?}", out.len());
+        for (i, data) in enumerate(out) {
+            println!("\nPeer {}", i);
+            println!("id: {}", &data.peer_id);
+            println!("ENR: {:?}", &data.enr);
+            println!("Last seen p2p address: {}", &data.last_seen_p2p_address);
+            println!("state: {}", &data.state);
+            println!("connection orientation: {}", &data.direction);
+        }
     }
 }

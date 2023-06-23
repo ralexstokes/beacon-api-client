@@ -5,7 +5,6 @@ use crate::{
         Namespace::{Beacon, Config, Debug, Node},
         NodeMethod,
     },
-    HeaderArg,
 };
 
 pub async fn run_cli(client: Client, args: CliConfig) {
@@ -78,6 +77,7 @@ pub async fn run_cli(client: Client, args: CliConfig) {
         Debug(DebugMethod::State(state_arg)) => state_arg.execute(&client).await,
         Debug(DebugMethod::Head(head_arg)) => head_arg.execute(&client).await,
         Node(NodeMethod::Identity(identity_arg)) => identity_arg.execute(&client).await,
+        Node(NodeMethod::Peers(peers_arg)) => peers_arg.execute(&client).await,
         _ => println!("method not yet implemented"),
     }
 }

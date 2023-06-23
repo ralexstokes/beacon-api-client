@@ -14,12 +14,12 @@ use ethereum_consensus::{
     altair::mainnet::{
         BeaconState, SignedContributionAndProof, SyncCommitteeContribution, SyncCommitteeMessage,
     },
-    bellatrix::mainnet::{BlindedBeaconBlock, SignedBlindedBeaconBlock},
     builder::SignedValidatorRegistration,
+    capella::mainnet::{BlindedBeaconBlock, SignedBeaconBlock, SignedBlindedBeaconBlock},
     networking::PeerId,
     phase0::mainnet::{
         Attestation, AttestationData, AttesterSlashing, BeaconBlock, Fork, ProposerSlashing,
-        SignedAggregateAndProof, SignedBeaconBlock, SignedVoluntaryExit,
+        SignedAggregateAndProof, SignedVoluntaryExit,
     },
     primitives::{Bytes32, CommitteeIndex, Epoch, RandaoReveal, Root, Slot, ValidatorIndex},
 };
