@@ -1,14 +1,16 @@
 use crate::error::ApiError;
 use ethereum_consensus::{
-    networking::{Enr, MetaData, Multiaddr, PeerId},
+    altair::mainnet::MetaData,
+    networking::{Enr, Multiaddr, PeerId},
     phase0::mainnet::{Checkpoint, SignedBeaconBlockHeader, Validator},
     primitives::{
         BlsPublicKey, ChainId, CommitteeIndex, Coordinate, Epoch, ExecutionAddress, Gwei, Root,
         Slot, ValidatorIndex, Version,
     },
+    serde::try_bytes_from_hex_str,
 };
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use std::{collections::HashMap, fmt};
+use std::{collections::HashMap, fmt, str::FromStr};
 
 #[derive(Serialize, Deserialize)]
 pub struct VersionData {
@@ -30,7 +32,7 @@ pub struct DepositContract {
     pub address: ExecutionAddress,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct GenesisDetails {
     #[serde(with = "crate::serde::as_string")]
     pub genesis_time: u64,
@@ -39,7 +41,7 @@ pub struct GenesisDetails {
     pub genesis_fork_version: Version,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum StateId {
     Head,
     Genesis,
@@ -63,12 +65,35 @@ impl fmt::Display for StateId {
     }
 }
 
+impl FromStr for StateId {
+    type Err = &'static str;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "finalized" => Ok(StateId::Finalized),
+            "justified" => Ok(StateId::Justified),
+            "head" => Ok(StateId::Head),
+            "genesis" => Ok(StateId::Genesis),
+            _ => {
+                if s.parse::<u64>().is_ok() {
+                    return Ok(StateId::Slot(s.parse::<u64>().unwrap()))
+                } else if try_bytes_from_hex_str(s).is_ok() {
+                    return Ok(StateId::Root(
+                        try_bytes_from_hex_str(s).unwrap().as_slice().try_into().unwrap(),
+                    ))
+                } else {
+                    return Err("invalid input to state_id")
+                }
+            }
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize)]
 pub struct RootData {
     pub root: Root,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum BlockId {
     Head,
     Genesis,
@@ -87,6 +112,28 @@ impl fmt::Display for BlockId {
             BlockId::Root(root) => return write!(f, "{root}"),
         };
         write!(f, "{printable}")
+    }
+}
+
+impl FromStr for BlockId {
+    type Err = &'static str;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "finalized" => Ok(BlockId::Finalized),
+            "head" => Ok(BlockId::Head),
+            "genesis" => Ok(BlockId::Genesis),
+            _ => {
+                if s.parse::<u64>().is_ok() {
+                    return Ok(BlockId::Slot(s.parse::<u64>().unwrap()))
+                } else if try_bytes_from_hex_str(s).is_ok() {
+                    return Ok(BlockId::Root(
+                        try_bytes_from_hex_str(s).unwrap().as_slice().try_into().unwrap(),
+                    ))
+                } else {
+                    return Err("invalid input to block_id")
+                }
+            }
+        }
     }
 }
 
@@ -142,7 +189,29 @@ impl fmt::Display for ValidatorStatus {
     }
 }
 
-#[derive(Debug)]
+impl FromStr for ValidatorStatus {
+    type Err = &'static str;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "pending_initialized" => Ok(ValidatorStatus::PendingInitialized),
+            "pending_queued" => Ok(ValidatorStatus::PendingQueued),
+            "active_ongoing" => Ok(ValidatorStatus::ActiveOngoing),
+            "active_exiting" => Ok(ValidatorStatus::ActiveExiting),
+            "active_slashed" => Ok(ValidatorStatus::ActiveSlashed),
+            "exited_unslashed" => Ok(ValidatorStatus::ExitedUnslashed),
+            "exited_slashed" => Ok(ValidatorStatus::ExitedSlashed),
+            "withdrawal_possible" => Ok(ValidatorStatus::WithdrawalPossible),
+            "withdrawal_done" => Ok(ValidatorStatus::WithdrawalDone),
+            "active" => Ok(ValidatorStatus::Active),
+            "pending" => Ok(ValidatorStatus::Pending),
+            "exited" => Ok(ValidatorStatus::Exited),
+            "withdrawal" => Ok(ValidatorStatus::Withdrawal),
+            _ => Err("invalid input to validator status"),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
 pub enum PublicKeyOrIndex {
     PublicKey(BlsPublicKey),
     Index(ValidatorIndex),
@@ -167,6 +236,17 @@ impl From<ValidatorIndex> for PublicKeyOrIndex {
 impl From<BlsPublicKey> for PublicKeyOrIndex {
     fn from(public_key: BlsPublicKey) -> Self {
         Self::PublicKey(public_key)
+    }
+}
+
+impl From<String> for PublicKeyOrIndex {
+    fn from(s: String) -> Self {
+        match try_bytes_from_hex_str(&s) {
+            Ok(..) => {
+                Self::PublicKey(try_bytes_from_hex_str(&s).unwrap().as_slice().try_into().unwrap())
+            }
+            _ => Self::Index(s.parse::<usize>().unwrap()),
+        }
     }
 }
 
@@ -239,7 +319,7 @@ pub struct NetworkIdentity {
     pub metadata: MetaData,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "lowercase")]
 pub enum PeerState {
     Disconnected,
@@ -260,7 +340,20 @@ impl fmt::Display for PeerState {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+impl FromStr for PeerState {
+    type Err = &'static str;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "disconnected" => Ok(PeerState::Disconnected),
+            "connecting" => Ok(PeerState::Connecting),
+            "connected" => Ok(PeerState::Connected),
+            "disconnecting" => Ok(PeerState::Disconnecting),
+            _ => return Err("invalid input to peer_state"),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "lowercase")]
 pub enum ConnectionOrientation {
     Inbound,
@@ -277,6 +370,17 @@ impl fmt::Display for ConnectionOrientation {
     }
 }
 
+impl FromStr for ConnectionOrientation {
+    type Err = &'static str;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "inbound" => Ok(ConnectionOrientation::Inbound),
+            "outbound" => Ok(ConnectionOrientation::Outbound),
+            _ => return Err("invalid input to connection_orientation"),
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize)]
 pub struct PeerDescriptor {
     pub state: PeerState,
@@ -286,7 +390,7 @@ pub struct PeerDescriptor {
 #[derive(Serialize, Deserialize)]
 pub struct PeerDescription {
     pub peer_id: PeerId,
-    pub enr: Enr,
+    pub enr: Option<Enr>,
     pub last_seen_p2p_address: Multiaddr,
     pub state: PeerState,
     pub direction: ConnectionOrientation,
