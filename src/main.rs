@@ -7,5 +7,5 @@ async fn main() {
     let args = CliConfig::parse();
     let url = Url::parse(&args.endpoint).unwrap();
     let client = Client::new(url);
-    run_cli(&client, &args).await;
+    dbg!(run_cli(&client, &args).await);
 }
