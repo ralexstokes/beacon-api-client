@@ -1,4 +1,4 @@
-use crate::types::StateId;
+use crate::{types::StateId, PublicKeyOrIndex, ValidatorStatus};
 use clap::{Args, Parser, Subcommand};
 
 #[derive(Debug, Parser)]
@@ -21,6 +21,8 @@ pub enum Namespace {
 pub enum BeaconMethod {
     Genesis,
     Root(StateIdArg),
+    FinalityCheckpoints(StateIdArg),
+    Validators(ValidatorsArg),
 }
 
 #[derive(Args, Debug)]
@@ -37,3 +39,19 @@ pub struct StateIdArg {
     )]
     pub state_id: StateId,
 }
+
+#[derive(Args, Debug, Clone)]
+pub struct ValidatorsArg {
+    pub state_id: StateId,
+    pub validator_id: PublicKeyOrIndex,
+    pub status: ValidatorStatus,
+}
+
+// impl ValidatorArg {
+//     pub async fn execute(&self, client: &Client) {
+//         let id = &self.state_id;
+//         let validator_id = &self.validator_id;
+//         let out = client.get_validator(id.to_owned(), validator_id.to_owned()).await.unwrap();
+//         println!("{:?}", out);
+//     }
+// }
