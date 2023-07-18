@@ -1,5 +1,5 @@
 mod config;
-use crate::{mainnet::Client, Error};
+use crate::{mainnet::Client};
 pub use config::CliConfig;
 use config::{BeaconMethod, Namespace::Beacon};
 use std::fmt;
