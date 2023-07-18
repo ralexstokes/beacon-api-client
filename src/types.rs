@@ -124,7 +124,7 @@ enum ExecutionStatus {
     Optimistic,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Debug, Deserialize)]
 pub struct FinalityCheckpoints {
     pub previous_justified: Checkpoint,
     pub current_justified: Checkpoint,
@@ -170,7 +170,29 @@ impl fmt::Display for ValidatorStatus {
     }
 }
 
-#[derive(Debug)]
+impl FromStr for ValidatorStatus {
+    type Err = &'static str;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "pending_initialized" => Ok(ValidatorStatus::PendingInitialized),
+            "pending_queued" => Ok(ValidatorStatus::PendingQueued),
+            "active_ongoing" => Ok(ValidatorStatus::ActiveOngoing),
+            "active_exiting" => Ok(ValidatorStatus::ActiveExiting),
+            "active_slashed" => Ok(ValidatorStatus::ActiveSlashed),
+            "exited_unslashed" => Ok(ValidatorStatus::ExitedUnslashed),
+            "exited_slashed" => Ok(ValidatorStatus::ExitedSlashed),
+            "withdrawal_possible" => Ok(ValidatorStatus::WithdrawalPossible),
+            "withdrawal_done" => Ok(ValidatorStatus::WithdrawalDone),
+            "active" => Ok(ValidatorStatus::Active),
+            "pending" => Ok(ValidatorStatus::Pending),
+            "exited" => Ok(ValidatorStatus::Exited),
+            "withdrawal" => Ok(ValidatorStatus::Withdrawal),
+            _ => Err("invalid input to validator status"),
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
 pub enum PublicKeyOrIndex {
     PublicKey(BlsPublicKey),
     Index(ValidatorIndex),
@@ -195,6 +217,17 @@ impl From<ValidatorIndex> for PublicKeyOrIndex {
 impl From<BlsPublicKey> for PublicKeyOrIndex {
     fn from(public_key: BlsPublicKey) -> Self {
         Self::PublicKey(public_key)
+    }
+}
+
+impl From<String> for PublicKeyOrIndex {
+    fn from(s: String) -> Self {
+        match try_bytes_from_hex_str(&s) {
+            Ok(..) => {
+                Self::PublicKey(try_bytes_from_hex_str(&s).unwrap().as_slice().try_into().unwrap())
+            }
+            _ => Self::Index(s.parse::<usize>().unwrap()),
+        }
     }
 }
 
