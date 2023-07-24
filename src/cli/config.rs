@@ -46,12 +46,3 @@ pub struct ValidatorsArg {
     pub validator_id: PublicKeyOrIndex,
     pub status: ValidatorStatus,
 }
-
-// impl ValidatorArg {
-//     pub async fn execute(&self, client: &Client) {
-//         let id = &self.state_id;
-//         let validator_id = &self.validator_id;
-//         let out = client.get_validator(id.to_owned(), validator_id.to_owned()).await.unwrap();
-//         println!("{:?}", out);
-//     }
-// }
