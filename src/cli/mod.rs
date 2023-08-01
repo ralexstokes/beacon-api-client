@@ -11,7 +11,7 @@ pub async fn run_cli(client: &Client, args: &CliConfig) -> Result<Box<dyn fmt::D
             Ok(Box::new(result))
         }
         Beacon(BeaconMethod::Root(arg)) => {
-            let result = client.get_state_root(arg.state_id.clone()).await?;
+            let result = client.get_state_root(&arg.state_id).await?;
             Ok(Box::new(result))
         }
         Beacon(BeaconMethod::FinalityCheckpoints(arg)) => {

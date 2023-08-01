@@ -172,6 +172,7 @@ impl fmt::Display for ValidatorStatus {
 
 impl FromStr for ValidatorStatus {
     type Err = &'static str;
+    
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "pending_initialized" => Ok(ValidatorStatus::PendingInitialized),
@@ -222,6 +223,21 @@ impl From<BlsPublicKey> for PublicKeyOrIndex {
 
 impl From<String> for PublicKeyOrIndex {
     fn from(s: String) -> Self {
+        match s.parse::<ValidatorIndex>() {
+            Ok(index) => Self::Index(index),
+            Err(err) => {
+                match try_bytes_from_hex_str(&s) {
+                    Ok(bytes) => {
+                        match BlsPublicKey::try_from(&bytes) {
+                            Ok(public_key) => Self::PublicKey(public_key),
+                            Err(err) => Err(format!("could not parse public key from hex string: {err}")),
+                        }
+                    }
+                    Err(hex_err) => Err(format!("data could not be parsed as `ValidatorIndex` or `BlsPublicKey`: {err}; {hex_err}")),
+                }
+            }
+        }
+        
         match try_bytes_from_hex_str(&s) {
             Ok(..) => {
                 Self::PublicKey(try_bytes_from_hex_str(&s).unwrap().as_slice().try_into().unwrap())
