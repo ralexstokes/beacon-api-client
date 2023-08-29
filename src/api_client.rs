@@ -23,6 +23,7 @@ use ethereum_consensus::{
 };
 use http::StatusCode;
 use itertools::Itertools;
+use reqwest::Response;
 use std::collections::HashMap;
 use url::Url;
 
@@ -47,6 +48,19 @@ async fn api_error_or_value<T: serde::de::DeserializeOwned>(
         _ => {
             let api_err = response.json::<ApiError>().await?;
             Err(Error::Api(api_err))
+        }
+    }
+}
+
+async fn decode_json_from_response<T: serde::de::DeserializeOwned>(
+    response: Response,
+) -> Result<T, Error> {
+    let bytes = response.bytes().await?;
+    match serde_json::from_slice(&bytes) {
+        Ok(value) => Ok(value),
+        Err(_) => {
+            let text = String::from_utf8(bytes.to_vec()).unwrap();
+            Err(Error::JsonDecoding(text))
         }
     }
 }
@@ -401,7 +415,7 @@ impl<
             request = request.query(&[("indices", indices)]);
         }
         let response = request.send().await?;
-        let result: ApiResult<Value<_>> = response.json().await?;
+        let result: ApiResult<Value<_>> = decode_json_from_response(response).await?;
         match result {
             ApiResult::Ok(result) => Ok(result.data),
             ApiResult::Err(err) => Err(err.into()),
