@@ -28,6 +28,8 @@ mod error {
         MissingExpectedData(String),
         #[error("json error: {0}")]
         Json(#[from] serde_json::Error),
+        #[error("could not decode JSON from text: {0}")]
+        JsonDecoding(String),
     }
 }
 
